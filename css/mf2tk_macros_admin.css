@@ -1,0 +1,113 @@
+
+/* Shortcode Tester */
+
+div#mf2tk-popup-outer{
+    position:fixed;
+    left:0;
+    top:0;
+    z-index:100000;
+    background-color:black;
+    opacity:0.8;
+    display:none;
+}
+
+div.mf2tk-popup{
+    position:fixed;
+    z-index:100001;
+    background-color:white;
+    border:4px solid #0073AA;
+    opacity:1;
+    overflow-y:auto;
+}
+
+div.mf2tk-popup>h3{
+    padding:5px 20px;
+    margin:0;
+    float:left;
+}
+
+button#button-mf2tk-alt-template-close,button#button-mf2tk-shortcode-tester-close{
+    float:right;
+    margin:6px 6px 0 0;
+}
+
+div.mf2tk-field-input-optional{
+    border:2px solid black;
+    padding:5px 20px;
+    margin:10px 50px;
+}
+
+div.mf2tk-field-input-optional select#mf2tk-alt_template-select{
+    margin:10px 0;
+}
+
+div.mf2tk-field-input-optional h6{
+    display:inline;
+}
+div.mf2tk-field-input-optional button.mf2tk-how-to-use{
+    font-size:10px;
+    font-weight:bold;
+    padding:0px 5px;
+    border:2px solid black;
+    border-radius:5px;
+    background-color:LightGray;
+}
+
+div.mf2tk-field-input-optional button.mf2tk-field_value_pane_button{
+    font-size:10px;
+    font-weight:bold;
+    padding:0px 5px;
+    float:right;
+    border:2px solid black;
+    border-radius:5px;
+    background-color:LightGray;
+}
+
+div.mf2tk-field-input-optional div.mf2tk-field_value_pane input[type="text"],
+div.mf2tk-field-input-optional div.mf2tk-field_value_pane textarea{
+    width:97%;
+}
+
+button.mf2tk-shortcode-tester-button{
+    margin:5px 5px 5px 0;
+}
+
+div.mf2tk-shortcode-tester-half{
+    width:50%;
+    padding:0;
+    margin:0;
+    float:left;
+}
+
+div#mf2tk-shortcode-tester-area-source{
+    width:94%;
+    padding:0;
+    border:2px solid black;
+    margin-left:4%;
+    margin-right:2%;
+}
+
+div#mf2tk-shortcode-tester-area-result{
+    width:94%;
+    padding:0;
+    border:2px solid black;
+    margin-left:2%;
+    margin-right:4%;
+}
+
+div.mf2tk-shortcode-tester-area textarea{
+  padding:10px;
+  margin-top:5px;
+}
+
+div.mf2tk-shortcode-tester-area h3{
+    padding:0 30px;
+    margin:0;
+}
+
+div.mf2tk-shortcode-tester-area textarea{
+    display:block;
+    width:99%;
+    margin-left:auto;
+    margin-right:auto;
+}
