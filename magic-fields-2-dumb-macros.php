@@ -104,8 +104,16 @@ EOD
                     'post_title'   => 'A Post Content Template Example',
                     'post_status'  => 'publish',
                     'post_content' => <<<'EOD'
-<!-- $#alpha# = "Hello World"; -->
-<h1>$#alpha#</h1>
+[mt_template it="alpha:'1';'2'"]
+<!-- $#beta# = "2"; -->
+#if( $#alpha# = "1" )#
+<span>Hello</span>
+#else#
+#if( $#alpha# = $#beta# )#
+<span> World</span>
+#endif#
+#endif#
+[/mt_template]
 EOD
                 ] );
 			}   # if ( !$wpdb->get_var( <<<EOD
