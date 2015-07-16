@@ -104,6 +104,7 @@ EOD
                     'post_title'   => 'A Post Content Template Example',
                     'post_status'  => 'publish',
                     'post_content' => <<<'EOD'
+<!-- This is a useless but tutorial post content template that works in any post since it does not use any custom fields. -->
 [mt_template it="alpha:'1';'2'"]
 <!-- $#beta# = "2"; -->
 #if( $#alpha# = "1" )#
