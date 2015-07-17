@@ -4,7 +4,7 @@ jQuery(document).ready(function(){
     a.className="button";
     a.href="#";
     a.textContent="Save as Template";
-    jQuery("a#insert-media-button").after(a);
+    jQuery("a#insert-media-button,button#insert-media-button").after(a);
     jQuery(a).click(function(){
         // use AJAX to request the server to create the Content Template
         var slug=jQuery("div#slugdiv input#post_name").val();
@@ -120,7 +120,7 @@ jQuery(document).ready(function(){
     a.className="button";
     a.href="#";
     a.textContent="Insert Template";
-    jQuery("a#insert-media-button").after(a);
+    jQuery("a#insert-media-button,button#insert-media-button").after(a);
     jQuery(a).click(function(){
         showPopup(divTemplate,divPopupOuter);
         divTemplate.find("select#mf2tk-alt_template-select").change();
@@ -167,7 +167,7 @@ jQuery(document).ready(function(){
     a.className="button";
     a.href="#";
     a.textContent="Shortcode Tester";
-    jQuery("a#insert-media-button").after(a);
+    jQuery("a#insert-media-button,button#insert-media-button").after(a);
     jQuery(a).click(function(){
         divShortcode.find("div#mf2tk-shortcode-tester-area-source textarea").val("");
         divShortcode.find("div#mf2tk-shortcode-tester-area-result textarea").val("");

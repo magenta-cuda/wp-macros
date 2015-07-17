@@ -4,7 +4,7 @@
 Plugin Name: A Tiny Post Content Template Interpreter
 Plugin URI:  http://tpcti.wordpress.com/
 Description: post content template interpreter and shortcode tester
-Version:     1.0
+Version:     1.0.1
 Author:      Magenta Cuda
 Author URI:  http://magentacuda.wordpress.com
 License:     GPL2
