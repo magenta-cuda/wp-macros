@@ -409,6 +409,7 @@ EOD
             $fields = explode( $options->post_member, $field_specifier );
             $last = count( $fields ) - 1;
             foreach ( $fields as $i => $field ) {
+                error_log( '$field=' . $field );
                 # check if there is an @filter suffix
                 $filter = '';
                 if ( $at = strpos( $field, $options->filter ) ) {
@@ -467,12 +468,53 @@ EOD;
                     return $as_array ? $value : implode( ',', $value );
                 }
                 if ( $filter ) {
+                    error_log( '$filter=' . $filter );
                     # the filter may be an '@' separated sequence of filter function names
                     $filters = explode ( $options->filter, $filter );
+                    # check if the first filter is an array dereference
+                    if ( preg_match( '/^<(\d+)>$/', $filters[ 0 ], $matches ) === 1 ) {
+                        if ( !array_key_exists( $matches[ 1 ], $value ) ) {
+                            $error = <<<EOD
+<div style="border:2px solid red;padding:5px;">Error: $matches[1] is an invalid index for custom field "$field".</div>
+EOD;
+                            return $as_array ? [ ] : '';
+                        }
+                        $value = [ $value[ $matches[1] ] ];
+                        unset( $filters[ 0 ] );
+                    }                    
                     $value = array_map( function( $v ) use ( $field, $filters, $options, &$error ) {
                         foreach ( $filters as $f ) {
+                            # check if filter function specifier has optional arguments
+                            if ( preg_match( '#^(\w+)\((.+)\)$#', $f, $m ) ) {
+                                $f = $m[ 1 ];
+                                # the optional arguments must be either single or double quoted strings or integers
+                                # the position of the main argument to the filter must be specified by a $
+                                # e.g. alpha@sprintf('The value is: %s',$)
+                                # e.g. beta@number_format($,2,'.',',')
+                                if ( preg_match_all( '#((("|\')(.*?)\3)|[\d]+|\$)(,|$)#', $m[ 2 ], $a, PREG_PATTERN_ORDER ) ) {
+                                    error_log( '$a=' . print_r( $a, true ) );
+                                    $a = $a[ 1 ];
+                                    array_walk( $a, function( &$v1 ) use ( $v ) {
+                                        if ( $v1 === '$' ) {
+                                            # main filter argument
+                                            $v1 = $v;
+                                        } else if ( substr_compare( $v1, '"', 0, 1) || substr_compare( $v1, '\'', 0, 1 ) ) {
+                                            # quoted string
+                                            $v1 = substr( $v1, 1, -1 );
+                                        } else {
+                                            # integer
+                                            $v1 = intval( $v1 );
+                                        }
+                                    } );
+                                } else {
+                                }
+                            } else {
+                                $a = [ $v ];
+                            }
+                            error_log( '$f=' . $f );
+                            error_log( '$a=' . print_r( $a, true ) );
                             if ( function_exists( $f ) ) {
-                                $v = call_user_func( $f, $field, $v );
+                                $v = call_user_func_array( $f, $a );
                             } else if ( !preg_match( '/^<(\d+)>$/', $f ) ) {
                                 $error = <<<EOD
 <div style="border:2px solid red;padding:5px;">Error: $f is an invalid filter for custom field "$field".</div>
@@ -486,8 +528,9 @@ EOD;
                         return $as_array ? [ ] : '';
                     }
                     # check if the last filter is an array dereference
+                    # for efficiency an array dereference should be done as the first filter but the following is done for compatibility with earlier versions
                     if ( preg_match( '/^<(\d+)>$/', $filters[ count( $filter ) - 1 ], $matches ) === 1 ) {
-                        if ( !array_key_exists( $matches[1], $value ) ) {
+                        if ( !array_key_exists( $matches[ 1 ], $value ) ) {
                             $error = <<<EOD
 <div style="border:2px solid red;padding:5px;">Error: $matches[1] is an invalid index for custom field "$field".</div>
 EOD;
