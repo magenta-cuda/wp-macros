@@ -32,7 +32,8 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 == Changelog ==
 
 = 1.1 =
-* Support optional arguments for filter functions.
+* Support optional arguments for filter functions, e.g. alpha@sprintf('The value is: %s',$) where $ specifies the position of value to be filtered
+* Support negative indexes e.g. alpha@<-1> references the last value of the multi-valued custom field alpha
 
 = 1.0.1 =
 * Fixes for WordPress 4.3 beta.
@@ -49,4 +50,6 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 * Fixes for WordPress 4.3 beta *
 
 = 1.1 =
-* Support optional arguments for filter functions.
+* Support optional arguments for filter functions, e.g. alpha@sprintf('The value is: %s',$) where $ specifies the position of value to be filtered
+* Support negative indexes e.g. alpha@<-1> references the last value of the multi-valued custom field alpha
+

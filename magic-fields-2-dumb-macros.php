@@ -470,15 +470,26 @@ EOD;
                     error_log( '$filter=' . $filter );
                     # the filter may be an '@' separated sequence of filter function names
                     $filters = explode ( $options->filter, $filter );
+                    # resolve index aliases
+                    if ( $filters[ 0 ] === 'first' ) {
+                        $filters[ 0 ] = '<0>';
+                    } else if ( $filters[ 0 ] === 'last' ) {
+                        $filters[ 0 ] = '<-1>';
+                    }
                     # check if the first filter is an array dereference
-                    if ( preg_match( '/^<(\d+)>$/', $filters[ 0 ], $matches ) === 1 ) {
-                        if ( !array_key_exists( $matches[ 1 ], $value ) ) {
+                    if ( preg_match( '/^<(-?)(\d+)>$/', $filters[ 0 ], $matches ) === 1 ) {
+                        $j = $matches[ 2 ];
+                        if ( $matches[ 1 ] === '-' ) {
+                            # a negative index is relative to the end of the array, e.g. -1 references the last element
+                            $j = count( $value ) - $j;
+                        }
+                        if ( !array_key_exists( $j, $value ) ) {
                             $error = <<<EOD
-<div style="border:2px solid red;padding:5px;">Error: $matches[1] is an invalid index for custom field "$field".</div>
+<div style="border:2px solid red;padding:5px;">Error: {$matches[1]}{$matches[2]} is an invalid index for custom field "$field".</div>
 EOD;
                             return $as_array ? [ ] : '';
                         }
-                        $value = [ $value[ $matches[1] ] ];
+                        $value = [ $value[ $j ] ];
                         unset( $filters[ 0 ] );
                     }                    
                     $value = array_map( function( $v ) use ( $field, $filters, $options, &$error ) {
@@ -486,7 +497,7 @@ EOD;
                             if ( preg_match( '#^\w+$#', $f ) ) {
                                 # filter function name only specified
                                 $a = [ $v ];
-                            } else if ( preg_match( '#^(\w+)\(((((("|\').*?\6)|\d+|\$),)*((("|\').*?\9)|\d+|\$))\)$#', $f, $m ) ) {
+                            } else if ( preg_match( '#^(\w+)\(((\s*((("|\').*?\6)|\d+|\$),)*\s*((("|\').*?\9)|\d+|\$))\s*\)$#', $f, $m ) ) {
                                 # filter function specifier has optional arguments
                                 $f = $m[ 1 ];
                                 # the optional arguments must be either single or double quoted strings or integers
@@ -504,7 +515,7 @@ EOD;
                                         } else if ( substr_compare( $v1, '"', 0, 1) || substr_compare( $v1, '\'', 0, 1 ) ) {
                                             # quoted string
                                             $v1 = substr( $v1, 1, -1 );
-                                        } else if ( is_numeric( $v1 ) ) {
+                                        } else {
                                             # integer
                                             $v1 = intval( $v1 );
                                         }
