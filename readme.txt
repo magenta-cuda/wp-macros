@@ -4,7 +4,7 @@ Donate link:
 Tags: template, interpreter, shortcode
 Requires at least: 3.6
 Tested up to: 4.2
-Stable tag: 1.0.1
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 A tiny template language for WordPress post content using only WordPress shortcodes.
@@ -31,8 +31,11 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 
 == Changelog ==
 
+= 1.1 =
+* Support optional arguments for filter functions.
+
 = 1.0.1 =
-* Fixes for WordPress 4.3 beta *
+* Fixes for WordPress 4.3 beta.
 
 = 1.0 =
 * Initial release.
@@ -45,3 +48,5 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 = 1.0.1 =
 * Fixes for WordPress 4.3 beta *
 
+= 1.1 =
+* Support optional arguments for filter functions.

@@ -409,7 +409,6 @@ EOD
             $fields = explode( $options->post_member, $field_specifier );
             $last = count( $fields ) - 1;
             foreach ( $fields as $i => $field ) {
-                error_log( '$field=' . $field );
                 # check if there is an @filter suffix
                 $filter = '';
                 if ( $at = strpos( $field, $options->filter ) ) {
@@ -484,14 +483,18 @@ EOD;
                     }                    
                     $value = array_map( function( $v ) use ( $field, $filters, $options, &$error ) {
                         foreach ( $filters as $f ) {
-                            # check if filter function specifier has optional arguments
-                            if ( preg_match( '#^(\w+)\((.+)\)$#', $f, $m ) ) {
+                            if ( preg_match( '#^\w+$#', $f ) ) {
+                                # filter function name only specified
+                                $a = [ $v ];
+                            } else if ( preg_match( '#^(\w+)\(((((("|\').*?\6)|\d+|\$),)*((("|\').*?\9)|\d+|\$))\)$#', $f, $m ) ) {
+                                # filter function specifier has optional arguments
                                 $f = $m[ 1 ];
                                 # the optional arguments must be either single or double quoted strings or integers
                                 # the position of the main argument to the filter must be specified by a $
                                 # e.g. alpha@sprintf('The value is: %s',$)
                                 # e.g. beta@number_format($,2,'.',',')
-                                if ( preg_match_all( '#((("|\')(.*?)\3)|[\d]+|\$)(,|$)#', $m[ 2 ], $a, PREG_PATTERN_ORDER ) ) {
+                                error_log( '$m[2]=' . $m[2] );
+                                if ( preg_match_all( '#((("|\').*?\3)|\d+|\$)(,|$)#', $m[ 2 ], $a, PREG_PATTERN_ORDER ) ) {
                                     error_log( '$a=' . print_r( $a, true ) );
                                     $a = $a[ 1 ];
                                     array_walk( $a, function( &$v1 ) use ( $v ) {
@@ -501,15 +504,17 @@ EOD;
                                         } else if ( substr_compare( $v1, '"', 0, 1) || substr_compare( $v1, '\'', 0, 1 ) ) {
                                             # quoted string
                                             $v1 = substr( $v1, 1, -1 );
-                                        } else {
+                                        } else if ( is_numeric( $v1 ) ) {
                                             # integer
                                             $v1 = intval( $v1 );
                                         }
                                     } );
-                                } else {
                                 }
                             } else {
-                                $a = [ $v ];
+                                $error = <<<EOD
+<div style="border:2px solid red;padding:5px;">Error: $f is an invalid filter for custom field "$field".</div>
+EOD;
+                                return $as_array ? [ ] : '';
                             }
                             error_log( '$f=' . $f );
                             error_log( '$a=' . print_r( $a, true ) );
