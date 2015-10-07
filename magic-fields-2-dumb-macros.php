@@ -868,7 +868,7 @@ EOD;
             # if statement is #if($#alpha#)# or #if($#alpha#=$#beta#)# or #if($#alpha#="gamma")# or #if($#alpha#='delta')#
             # the regex is really ugly because wptexturize() runs before do_shortcode() and unfortunately texturizes the quote marks
             $if_count = preg_match_all(
-                '/\r?\n?#if\(\s*\$#([\w-]+)#(\s*(=|!=)\s*((\$#([\w-]+)#)|(("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;)(.*?)("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;))))?\s*\)#\r?\n?/',
+                '/\r?\n?#if\(\s*\$#([\w-]+)#(\s*(=|!=|<|<=|>=|>)\s*((\$#([\w-]+)#)|(("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;)(.*?)("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;))))?\s*\)#\r?\n?/',
                 $macro, $if_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
             $end_count = preg_match_all( '/\r?\n?#endif#\r?\n?/', $macro, $end_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
             if ( $if_count !== $end_count ) {
@@ -904,25 +904,45 @@ EOD;
             if ( $if_count ) {
                 # do conditional text inclusion/exclusion
                 $includes = array_map( function( $match ) use ( $atts ) {
-                    if ( !array_key_exists( $match[1][0], $atts ) ) {
+                    if ( !array_key_exists( $match[ 1 ][ 0 ], $atts ) ) {
                         return false;
                     }
-                    $value = $atts[$match[1][0]];
+                    $value = $atts[ $match[ 1 ][ 0 ] ];
                     if ( array_key_exists( 7, $match ) ) {
                         # #if($#alpha#='gamma')#
                         # #if($#alpha#="gamma")#
-                        if ( $match[ 3 ][ 0 ] === '=' ) {
-                            return $value === $match[9][0];
-                        } else if ( $match[ 3 ][ 0 ] === '!=' ) {
-                            return $value !== $match[9][0];
+                        $right = $match[ 9 ][ 0 ];
+                        switch( $match[ 3 ][ 0 ] ) {
+                        case '=':
+                            return $value === $right;
+                        case '!=':
+                            return $value !== $right;
+                        case '<':
+                            return $value < $right;
+                        case '<=':
+                            return $value <= $right;
+                        case '>=':
+                            return $value >= $right;
+                        case '>':
+                            return $value > $right;
                         }
                     } else if ( array_key_exists( 5, $match ) ) {
                         # #if($#alpha#=$#beta#)#
-                        if ( array_key_exists( $match[6][0], $atts ) ) {
-                            if ( $match[ 3 ][ 0 ] === '=' ) {
-                                return $atts[$match[6][0]] === $value;
-                            } else if ( $match[ 3 ][ 0 ] === '!=' ) {
-                                return $atts[$match[6][0]] !== $value;
+                        if ( array_key_exists( $match[ 6 ][ 0 ], $atts ) ) {
+                            $right = $atts[ $match[ 6 ][ 0 ] ];
+                            switch( $match[ 3 ][ 0 ] ) {
+                            case '=':
+                                return $value === $right;
+                            case '!=':
+                                return $value !== $right;
+                            case '<':
+                                return $value < $right;
+                            case '<=':
+                                return $value <= $right;
+                            case '>=':
+                                return $value >= $right;
+                            case '>':
+                                return $value > $right;
                             }
                         }
                         return $value === '';
