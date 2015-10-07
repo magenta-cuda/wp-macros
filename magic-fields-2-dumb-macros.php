@@ -467,7 +467,6 @@ EOD;
                     return $as_array ? $value : implode( ',', $value );
                 }
                 if ( $filter ) {
-                    error_log( '$filter=' . $filter );
                     # the filter may be an '@' separated sequence of filter function names
                     $filters = explode ( $options->filter, $filter );
                     # resolve index aliases
@@ -504,9 +503,7 @@ EOD;
                                 # the position of the main argument to the filter must be specified by a $
                                 # e.g. alpha@sprintf('The value is: %s',$)
                                 # e.g. beta@number_format($,2,'.',',')
-                                error_log( '$m[2]=' . $m[2] );
                                 if ( preg_match_all( '#((("|\').*?\3)|\d+|\$)(,|$)#', $m[ 2 ], $a, PREG_PATTERN_ORDER ) ) {
-                                    error_log( '$a=' . print_r( $a, true ) );
                                     $a = $a[ 1 ];
                                     array_walk( $a, function( &$v1 ) use ( $v ) {
                                         if ( $v1 === '$' ) {
@@ -527,8 +524,6 @@ EOD;
 EOD;
                                 return $as_array ? [ ] : '';
                             }
-                            error_log( '$f=' . $f );
-                            error_log( '$a=' . print_r( $a, true ) );
                             if ( function_exists( $f ) ) {
                                 $v = call_user_func_array( $f, $a );
                             } else if ( !preg_match( '/^<(\d+)>$/', $f ) ) {
