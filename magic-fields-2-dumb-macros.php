@@ -405,8 +405,12 @@ EOD
         } else {   # if ( $TPCTI_MF2_ACTIVE && !$options->use_native_mode ) {
         $get_custom_field = function( $field_specifier, $as_array = FALSE ) use ( $options, &$error ) {
             global $post;
+            error_log( $field_specifier );
             $post_id = $post->ID;
-            $fields = explode( $options->post_member, $field_specifier );
+            preg_match_all( '#(\w+(@((<-?\d+>)|(\w+(\((((("|\').*?("|\'))|\d+(\.\d*)?|\$),)*((("|\').*?("|\'))|\d+(\.\d*)?|\$)\))?)))*)(\\'
+                . $options->post_member . '|$)#', $field_specifier, $fields );
+            error_log( print_r( $fields, true ) );
+            $fields = $fields[ 1 ];
             $last = count( $fields ) - 1;
             foreach ( $fields as $i => $field ) {
                 # check if there is an @filter suffix
@@ -493,10 +497,12 @@ EOD;
                     }                    
                     $value = array_map( function( $v ) use ( $field, $filters, $options, &$error ) {
                         foreach ( $filters as $f ) {
+                            error_log( $f );
                             if ( preg_match( '#^\w+$#', $f ) ) {
                                 # filter function name only specified
                                 $a = [ $v ];
                             } else if ( preg_match( '#^(\w+)\(((\s*((("|\').*?\6)|\d+|\$),)*\s*((("|\').*?\9)|\d+|\$))\s*\)$#', $f, $m ) ) {
+                                error_log( print_r( $m, true ) );
                                 # filter function specifier has optional arguments
                                 $f = $m[ 1 ];
                                 # the optional arguments must be either single or double quoted strings or integers
@@ -505,11 +511,12 @@ EOD;
                                 # e.g. beta@number_format($,2,'.',',')
                                 if ( preg_match_all( '#((("|\').*?\3)|\d+|\$)(,|$)#', $m[ 2 ], $a, PREG_PATTERN_ORDER ) ) {
                                     $a = $a[ 1 ];
+                                    error_log( print_r( $a, true ) );
                                     array_walk( $a, function( &$v1 ) use ( $v ) {
                                         if ( $v1 === '$' ) {
                                             # main filter argument
                                             $v1 = $v;
-                                        } else if ( substr_compare( $v1, '"', 0, 1) || substr_compare( $v1, '\'', 0, 1 ) ) {
+                                        } else if ( substr_compare( $v1, '"', 0, 1 ) === 0 || substr_compare( $v1, '\'', 0, 1 ) === 0 ) {
                                             # quoted string
                                             $v1 = substr( $v1, 1, -1 );
                                         } else {
