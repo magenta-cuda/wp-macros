@@ -310,8 +310,6 @@ in <strong>Text</strong> mode.<br>
             if ( $options->disable_wptexturize ) {
                 if ( !remove_filter( 'the_content', 'wptexturize' ) ) {
                     error_log( 'Plugin: A Tiny Post Content Template Interpreter - failed to remove filter wptexturize' );
-                } else {
-                    error_log( 'Plugin: A Tiny Post Content Template Interpreter - removed filter wptexturize' );
                 }
             }
             
@@ -416,11 +414,11 @@ EOD
         } else {   # if ( $TPCTI_MF2_ACTIVE && !$options->use_native_mode ) {
         $get_custom_field = function( $field_specifier, $as_array = FALSE ) use ( $options, &$error ) {
             global $post;
-            error_log( $field_specifier );
             $post_id = $post->ID;
+            # a field specifier looks like this: alpha.beta@<-1>@sprintf("%3.3s",$) where . indicates a post member operation
+            # break the field specifier on the post member operator
             preg_match_all( '#(\w+(@((<-?\d+>)|(\w+(\((((("|\').*?("|\'))|\d+(\.\d*)?|\$),)*((("|\').*?("|\'))|\d+(\.\d*)?|\$)\))?)))*)(\\'
                 . $options->post_member . '|$)#', $field_specifier, $fields );
-            error_log( print_r( $fields, true ) );
             $fields = $fields[ 1 ];
             $last = count( $fields ) - 1;
             foreach ( $fields as $i => $field ) {
@@ -433,7 +431,7 @@ EOD
                 if ( $filter === 'field_name' ) {
                     return $as_array ? [ $field ] : $field;
                 }
-                $value = [];
+                $value = [ ];
                 $meta = get_post_meta( $post_id, $field );
                 if ( !$meta ) {
                     $error = <<<EOD
@@ -475,9 +473,9 @@ EOD;
                 # check if the filter is a request for indexes
                 if ( $filter === 'indexes' || $filter === 'indices' ) {
                     $count = count( $value );
-                    $value = [];
+                    $value = [ ];
                     for ( $i = 0; $i < $count; $i++ ) {
-                        $value[] = (string) $i;
+                        $value[ ] = (string) $i;
                     }
                     return $as_array ? $value : implode( ',', $value );
                 }
@@ -508,12 +506,10 @@ EOD;
                     }                    
                     $value = array_map( function( $v ) use ( $field, $filters, $options, &$error ) {
                         foreach ( $filters as $f ) {
-                            error_log( $f );
                             if ( preg_match( '#^\w+$#', $f ) ) {
                                 # filter function name only specified
                                 $a = [ $v ];
                             } else if ( preg_match( '#^(\w+)\(((\s*((("|\').*?\6)|\d+|\$),)*\s*((("|\').*?\9)|\d+|\$))\s*\)$#', $f, $m ) ) {
-                                error_log( print_r( $m, true ) );
                                 # filter function specifier has optional arguments
                                 $f = $m[ 1 ];
                                 # the optional arguments must be either single or double quoted strings or integers
@@ -522,7 +518,6 @@ EOD;
                                 # e.g. beta@number_format($,2,'.',',')
                                 if ( preg_match_all( '#((("|\').*?\3)|\d+|\$)(,|$)#', $m[ 2 ], $a, PREG_PATTERN_ORDER ) ) {
                                     $a = $a[ 1 ];
-                                    error_log( print_r( $a, true ) );
                                     array_walk( $a, function( &$v1 ) use ( $v ) {
                                         if ( $v1 === '$' ) {
                                             # main filter argument
