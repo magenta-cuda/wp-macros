@@ -69,7 +69,8 @@ namespace {
             'content_macro_post_type' => 'mt_content_template',
             'filter'                  => '@',
             'separator'               => ', ',
-            'post_member'             => '.'
+            'post_member'             => '.',
+            'disable_wptexturize'     => false
         ] );
         }   # if ( $TPCTI_MF2_ACTIVE ) {
         $error = NULL;
@@ -303,7 +304,17 @@ in <strong>Text</strong> mode.<br>
             add_action( 'load-post.php',     $post_editor_actions );
 
         } else {   # if ( is_admin( ) ) {
-                
+
+            # wptexturize() sometimes texturizes the quote marks in shortcode attributes which breaks my parser so
+            
+            if ( $options->disable_wptexturize ) {
+                if ( !remove_filter( 'the_content', 'wptexturize' ) ) {
+                    error_log( 'Plugin: A Tiny Post Content Template Interpreter - failed to remove filter wptexturize' );
+                } else {
+                    error_log( 'Plugin: A Tiny Post Content Template Interpreter - removed filter wptexturize' );
+                }
+            }
+            
             # AJAX action 'tpcti_eval_post_content' allows access to post content shortcode evaluator from the frontend client
             
             add_action( 'wp_ajax_nopriv_tpcti_eval_post_content', function( ) use ( &$do_macro ) {
@@ -1134,6 +1145,10 @@ or for convenience, i.e., to reduce typing. The documentation for this plugin is
         }   # if ( $TPCTI_MF2_ACTIVE ) {
         ?>></td>
     <td>left of operator is a post id and right of operator is a custom field in that post</tr>
+<tr><th style="text-align:right;"><a href="https://tpcti.wordpress.com/#problems" target="_blank">Disable wptexturize</a>:</th>
+    <td><input type="checkbox" id="disable_wptexturize" class="tpcti_option" value="wptexturize_disabled"
+        <?php if ( $options->disable_wptexturize ) { echo 'checked'; } ?>></td>
+    <td>wptexturize may texturize quote marks of shortcode parameters which breaks my parser</tr>
 <?php
 if ( $TPCTI_MF2_ACTIVE ) {
 ?>
