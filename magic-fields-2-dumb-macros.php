@@ -27,6 +27,7 @@ namespace {
     
     # A comparison expression is of the form $#alpha#='gamma', $#alpha#="gamma", $#alpha#=$#beta# or $#alpha# (last case is not really a comparison)
     # the regex for a comparison expression is really ugly because wptexturize() runs before do_shortcode() and unfortunately texturizes the quote marks
+    # of shortcode parameters - i.e. changes straight quote marks into curly quote marks
     define( 'REGEX_COMP_EXPR',
         '(\s*\$#([\w-]+)#(\s*(=|!=|<|<=|>=|>)\s*((\$#([\w-]+)#)|(("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;)(.*?)("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;))))?\s*)'
     );
@@ -620,7 +621,7 @@ EOD;
                 case '>':
                     return $value > $right;
                 }
-            };
+            };   # $eval_comp = function( $value, $op, $right ) {
             
             # $eval_expr() parses and evaluates a boolean combination of comparison expressions and returns TRUE or FALSE
             
@@ -660,7 +661,7 @@ EOD;
                     }
                 }
                 return $sum;
-            };
+            };   # $eval_expr = function( $expr, $atts ) use ( $eval_comp ) {
             
             static $saved_inline_macros = [ ];
             $error = NULL;
@@ -942,18 +943,19 @@ EOD;
                 # error detected so just return error message
                 return $status;
             }     
-            # if statement is #if($#alpha#)# or #if($#alpha#=$#beta#)# or #if($#alpha#="gamma")# or #if($#alpha#='delta')#
-            # the regex is really ugly because wptexturize() runs before do_shortcode() and unfortunately texturizes the quote marks
-            $if_count = preg_match_all( '/\r?\n?#if\(' . REGEX_COMP_EXPR . '((&&|\|\|)' . REGEX_COMP_EXPR . ')*\)#\r?\n?/',
+            # the condition of if statement is a boolean combination using && and || operators of comparison expressions of the form $#alpha#='gamma',
+            # $#alpha#="gamma", $#alpha#=$#beta# or $#alpha# (last case is not really a comparison)
+            $if_count = preg_match_all( '/\r?\n?#if\((' . REGEX_COMP_EXPR . '((&&|\|\|)' . REGEX_COMP_EXPR . ')*)\)#\r?\n?/',
                                         $macro, $if_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
-            error_log( '$if_matches=' . print_r( $if_matches, true ) );
             $end_count = preg_match_all( '/\r?\n?#endif#\r?\n?/', $macro, $end_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
+
             if ( $if_count !== $end_count ) {
                 return <<<EOD
 <div style="border:2px solid red;color:red;padding:5px;">{$options->shortcode_name} error:
     count of "#if(...)# not equal count of "#endif#"</div>
 EOD;
-            }
+            }   # if ( $if_count !== $end_count ) {
+
             if ( $inner_macro_ranges && $if_count ) {
                 # first remove #if(...)# ... #endif# matches found in embedded inner macros
                 $matches = [ $if_matches, $end_matches ];
@@ -976,10 +978,11 @@ EOD;
     count of "#if(...)# not equal count of "#endif#"</div>
 EOD;
                 }
-            }
+            }   # if ( $inner_macro_ranges && $if_count ) {
             
             if ( $if_count ) {
                 # do conditional text inclusion/exclusion
+                # first evaluate all conditions in all if statements
                 $includes = array_map( function( $match ) use ( $atts, $eval_expr, $eval_comp ) {
                     error_log( '$match=' . print_r( $match, true ) );
                     return $eval_expr( $match[ 1 ][ 0 ], $atts );

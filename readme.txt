@@ -4,7 +4,7 @@ Donate link:
 Tags: template, interpreter, shortcode
 Requires at least: 3.6
 Tested up to: 4.2
-Stable tag: 1.1
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 A tiny template language for WordPress post content using only WordPress shortcodes.
@@ -31,6 +31,9 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 
 == Changelog ==
 
+= 1.1.1 =
+* if condition now supports a boolean combination of comparison expressions
+
 = 1.1 =
 * Support optional arguments for filter functions, e.g. alpha@sprintf('The value is: %s',$) where $ specifies the position of value to be filtered
 * Support negative indexes e.g. alpha@<-1> references the last value of the multi-valued custom field alpha
@@ -54,4 +57,7 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 * Support optional arguments for filter functions, e.g. alpha@sprintf('The value is: %s',$) where $ specifies the position of value to be filtered
 * Support negative indexes e.g. alpha@<-1> references the last value of the multi-valued custom field alpha
 * Support !=,<,<=,>=,> as conditional operators
+
+= 1.1.1 =
+* if condition now supports a boolean combination of comparison expressions
 
