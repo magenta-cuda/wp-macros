@@ -894,6 +894,7 @@ EOD;
                         if ( array_key_exists( 7, $assignment ) ) {
                             # assignment is to value of custom field
                             $custom_field = $assignment[7][0];
+                            # first do any template variable interpolation, e.g. <!-- $#beta# = $#gamma#@<$#i#>; -->
                             $custom_field = preg_replace_callback( '/\$#(\w+)#/', function( $m ) use ( $atts, &$error ) {
                                 if ( array_key_exists( $m[1], $atts ) ) {
                                     return $atts[ $m[1] ];

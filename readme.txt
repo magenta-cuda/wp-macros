@@ -32,11 +32,11 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 == Changelog ==
 
 = 1.1.1 =
-* if condition now supports a boolean combination of comparison expressions
+* if condition now supports a boolean combination of comparison expressions, e.g. #if( $#alpha#="1" && $#beta#!="2" || $#gamma#>="3" || $#delta# )#
 
 = 1.1 =
 * Support optional arguments for filter functions, e.g. alpha@sprintf('The value is: %s',$) where $ specifies the position of value to be filtered
-* Support negative indexes e.g. alpha@<-1> references the last value of the multi-valued custom field alpha
+* Support negative indexes e.g. alpha@&lt;-1&gt; references the last value of the multi-valued custom field alpha
 * Support !=,<,<=,>=,> as conditional operators
 
 = 1.0.1 =
@@ -55,9 +55,10 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 
 = 1.1 =
 * Support optional arguments for filter functions, e.g. alpha@sprintf('The value is: %s',$) where $ specifies the position of value to be filtered
-* Support negative indexes e.g. alpha@<-1> references the last value of the multi-valued custom field alpha
+* Support negative indexes e.g. alpha@&lt;-1&gt; references the last value of the multi-valued custom field alpha
 * Support !=,<,<=,>=,> as conditional operators
 
 = 1.1.1 =
-* if condition now supports a boolean combination of comparison expressions
+* if condition now supports a boolean combination of comparison expressions, e.g. #if( $#alpha#="1" && $#beta#!="2" || $#gamma#>="3" || $#delta# )#
+
 
