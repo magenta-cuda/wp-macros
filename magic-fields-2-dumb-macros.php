@@ -25,6 +25,12 @@
 
 namespace {
     
+    # A comparison expression is of the form $#alpha#='gamma', $#alpha#="gamma", $#alpha#=$#beta# or $#alpha# (last case is not really a comparison)
+    # the regex for a comparison expression is really ugly because wptexturize() runs before do_shortcode() and unfortunately texturizes the quote marks
+    define( 'REGEX_COMP_EXPR',
+        '(\s*\$#([\w-]+)#(\s*(=|!=|<|<=|>=|>)\s*((\$#([\w-]+)#)|(("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;)(.*?)("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;))))?\s*)'
+    );
+    
     include_once ABSPATH . 'wp-admin/includes/plugin.php';
     
     # in the following the term "content template" and the term "content macro" refer to the same thing
@@ -585,7 +591,7 @@ EOD;
                 }
                 return implode( $options->separator, $value );
             }
-        };
+        };   # $get_custom_field = function( $field_specifier, $as_array = FALSE ) use ( $options, &$error ) {
         }   # } else {   # if ( $TPCTI_MF2_ACTIVE && !$options->use_native_mode ) {
         # $do_macro implements the [show_macro] shortcode
 
@@ -593,6 +599,69 @@ EOD;
             use ( &$do_macro, $find_embedded_macros, $get_custom_field, $options, &$error, $TPCTI_MF2_ACTIVE ) {
             global $post;
             global $wpdb;
+            
+            # $eval_comp() compares $value with $right using the comparison operator $op and returns TRUE or FALSE
+            
+            $eval_comp = function( $value, $op, $right ) {
+                error_log( '$eval_comp():$value=' . $value );
+                error_log( '$eval_comp():$op=' . $op );
+                error_log( '$eval_comp():$right=' . $right );
+                switch( $op ) {
+                case '=':
+                    return $value === $right;
+                case '!=':
+                    return $value !== $right;
+                case '<':
+                    return $value < $right;
+                case '<=':
+                    return $value <= $right;
+                case '>=':
+                    return $value >= $right;
+                case '>':
+                    return $value > $right;
+                }
+            };
+            
+            # $eval_expr() parses and evaluates a boolean combination of comparison expressions and returns TRUE or FALSE
+            
+            $eval_expr = function( $expr, $atts ) use ( $eval_comp ) {
+                $sum = FALSE;
+                $product = TRUE;
+                preg_match_all( '/' . REGEX_COMP_EXPR . '(&&|\|\||$)/', $expr, $matches, PREG_SET_ORDER );
+                error_log( '$eval_expr():$atts=' . print_r( $atts, true ) );
+                foreach ( $matches as $match ) {
+                    error_log( '$eval_expr():$match=' . print_r( $match, true ) );
+                    if ( !array_key_exists( $match[ 2 ], $atts ) ) {
+                        return FALSE;
+                    }
+                    $value = $atts[ $match[ 2 ] ];
+                    if ( !empty( $match[ 10 ] ) ) {
+                        # $#alpha#="gamma"
+                        # $#alpha#='gamma'
+                        $bool_right = $eval_comp( $value, $match[ 4 ], $match[ 10 ] );
+                    } else if ( !empty( $match[ 7 ] ) ) {
+                        # $#alpha#=$#beta#
+                        $right = $match[ 7 ];
+                        if ( !array_key_exists( $right, $atts ) ) {
+                            return FALSE;
+                        }
+                        $bool_right = $eval_comp( $value, $match[ 4 ], $atts[ $right ] );
+                    } else {
+                        # $#alpha#
+                        $bool_right = !is_null( $value ) && $value !== '';
+                    }
+                    error_log( '$bool_right=' . $bool_right );
+                    $product = $product && $bool_right;
+                    $bool_op = $match[ 12 ];
+                    error_log( '$bool_op=' . $bool_op );
+                    if ( $bool_op === '||' || !$bool_op ) {
+                        $sum = $sum || $product;
+                        $product = TRUE;
+                    }
+                }
+                return $sum;
+            };
+            
             static $saved_inline_macros = [ ];
             $error = NULL;
             if ( $TPCTI_MF2_ACTIVE ) {
@@ -875,9 +944,9 @@ EOD;
             }     
             # if statement is #if($#alpha#)# or #if($#alpha#=$#beta#)# or #if($#alpha#="gamma")# or #if($#alpha#='delta')#
             # the regex is really ugly because wptexturize() runs before do_shortcode() and unfortunately texturizes the quote marks
-            $if_count = preg_match_all(
-                '/\r?\n?#if\(\s*\$#([\w-]+)#(\s*(=|!=|<|<=|>=|>)\s*((\$#([\w-]+)#)|(("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;)(.*?)("|\'|&#8216;|&#8217;|&#8220;|&#8221;|&#8242;|&#8243;))))?\s*\)#\r?\n?/',
-                $macro, $if_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
+            $if_count = preg_match_all( '/\r?\n?#if\(' . REGEX_COMP_EXPR . '((&&|\|\|)' . REGEX_COMP_EXPR . ')*\)#\r?\n?/',
+                                        $macro, $if_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
+            error_log( '$if_matches=' . print_r( $if_matches, true ) );
             $end_count = preg_match_all( '/\r?\n?#endif#\r?\n?/', $macro, $end_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
             if ( $if_count !== $end_count ) {
                 return <<<EOD
@@ -911,53 +980,9 @@ EOD;
             
             if ( $if_count ) {
                 # do conditional text inclusion/exclusion
-                $includes = array_map( function( $match ) use ( $atts ) {
-                    if ( !array_key_exists( $match[ 1 ][ 0 ], $atts ) ) {
-                        return false;
-                    }
-                    $value = $atts[ $match[ 1 ][ 0 ] ];
-                    if ( array_key_exists( 7, $match ) ) {
-                        # #if($#alpha#='gamma')#
-                        # #if($#alpha#="gamma")#
-                        $right = $match[ 9 ][ 0 ];
-                        switch( $match[ 3 ][ 0 ] ) {
-                        case '=':
-                            return $value === $right;
-                        case '!=':
-                            return $value !== $right;
-                        case '<':
-                            return $value < $right;
-                        case '<=':
-                            return $value <= $right;
-                        case '>=':
-                            return $value >= $right;
-                        case '>':
-                            return $value > $right;
-                        }
-                    } else if ( array_key_exists( 5, $match ) ) {
-                        # #if($#alpha#=$#beta#)#
-                        if ( array_key_exists( $match[ 6 ][ 0 ], $atts ) ) {
-                            $right = $atts[ $match[ 6 ][ 0 ] ];
-                            switch( $match[ 3 ][ 0 ] ) {
-                            case '=':
-                                return $value === $right;
-                            case '!=':
-                                return $value !== $right;
-                            case '<':
-                                return $value < $right;
-                            case '<=':
-                                return $value <= $right;
-                            case '>=':
-                                return $value >= $right;
-                            case '>':
-                                return $value > $right;
-                            }
-                        }
-                        return $value === '';
-                    } else if ( !array_key_exists( 2, $match ) ) {
-                        # #if($#alpha#)#
-                        return !is_null( $value ) && $value !== '';
-                    }
+                $includes = array_map( function( $match ) use ( $atts, $eval_expr, $eval_comp ) {
+                    error_log( '$match=' . print_r( $match, true ) );
+                    return $eval_expr( $match[ 1 ][ 0 ], $atts );
                 }, $if_matches );
                 $i = 0;
                 while ( $if_matches && $end_matches ) {
@@ -1080,7 +1105,7 @@ EOD;
             $macro = do_shortcode( $macro );
             return $macro;
 
-        };   # $do_macro = function( $atts, $macro ) {
+        };   # $mf2tk_the_do_macro = $do_macro = function( $atts, $macro )
 
         # add the shortcodes - show_macro1, ... show_macro9 are needed to handle nested macros
         # as WordPress cannot correctly parse [show_macro][show_macro][/show_macro][/show_macro]
