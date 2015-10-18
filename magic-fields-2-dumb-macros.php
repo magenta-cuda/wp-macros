@@ -328,6 +328,9 @@ in <strong>Text</strong> mode.<br>
                 if ( !remove_filter( 'the_content', 'wptexturize' ) ) {
                     error_log( 'Plugin: A Tiny Post Content Template Interpreter - failed to remove filter wptexturize' );
                 }
+                if ( !remove_filter( 'the_content', 'convert_chars' ) ) {
+                    error_log( 'Plugin: A Tiny Post Content Template Interpreter - failed to remove filter convert_chars' );
+                }
             }
             
             # AJAX action 'tpcti_eval_post_content' allows access to post content shortcode evaluator from the frontend client
@@ -614,9 +617,6 @@ EOD;
             # $eval_comp() compares $value with $right using the comparison operator $op and returns TRUE or FALSE
             
             $eval_comp = function( $value, $op, $right ) {
-                error_log( '$eval_comp():$value=' . $value );
-                error_log( '$eval_comp():$op=' . $op );
-                error_log( '$eval_comp():$right=' . $right );
                 switch( $op ) {
                 case '=':
                     return $value === $right;
@@ -638,10 +638,8 @@ EOD;
             $eval_expr = function( $expr, $atts ) use ( $eval_comp ) {
                 $sum = FALSE;
                 $product = TRUE;
-                preg_match_all( '/' . REGEX_COMP_EXPR . '(&&|\|\||$)/', $expr, $matches, PREG_SET_ORDER );
-                error_log( '$eval_expr():$atts=' . print_r( $atts, true ) );
+                preg_match_all( '/' . REGEX_COMP_EXPR . '(&&|&#038;&#038;|\|\||$)/', $expr, $matches, PREG_SET_ORDER );
                 foreach ( $matches as $match ) {
-                    error_log( '$eval_expr():$match=' . print_r( $match, true ) );
                     if ( !array_key_exists( $match[ 2 ], $atts ) ) {
                         return FALSE;
                     }
@@ -661,10 +659,8 @@ EOD;
                         # $#alpha#
                         $bool_right = !is_null( $value ) && $value !== '';
                     }
-                    error_log( '$bool_right=' . $bool_right );
                     $product = $product && $bool_right;
                     $bool_op = $match[ 12 ];
-                    error_log( '$bool_op=' . $bool_op );
                     if ( $bool_op === '||' || !$bool_op ) {
                         $sum = $sum || $product;
                         $product = TRUE;
@@ -956,8 +952,10 @@ EOD;
             }     
             # the condition of if statement is a boolean combination using && and || operators of comparison expressions of the form $#alpha#='gamma',
             # $#alpha#="gamma", $#alpha#=$#beta# or $#alpha# (last case is not really a comparison)
-            $if_count = preg_match_all( '/\r?\n?#if\((' . REGEX_COMP_EXPR . '((&&|\|\|)' . REGEX_COMP_EXPR . ')*)\)#\r?\n?/',
+            error_log( '$macro=' . $macro );
+            $if_count = preg_match_all( '/\r?\n?#if\((' . REGEX_COMP_EXPR . '((&&|&#038;&#038;|\|\|)' . REGEX_COMP_EXPR . ')*)\)#\r?\n?/',
                                         $macro, $if_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
+            error_log( '$if_matches=' . print_r( $if_matches, true ) );
             $end_count = preg_match_all( '/\r?\n?#endif#\r?\n?/', $macro, $end_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
 
             if ( $if_count !== $end_count ) {
