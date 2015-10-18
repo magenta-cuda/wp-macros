@@ -522,10 +522,14 @@ EOD;
                             return $as_array ? [ ] : '';
                         }
                         $value = [ $value[ $j ] ];
-                        unset( $filters[ 0 ] );
+                        $filters[ 0 ] = '';
                     }                    
                     $value = array_map( function( $v ) use ( $field, $filters, $options, &$error ) {
                         foreach ( $filters as $f ) {
+                            if ( !$f ) {
+                                # array dereference filters already done and nullified
+                                continue;
+                            }
                             if ( preg_match( '#^\w+$#', $f ) ) {
                                 # filter function name only specified
                                 $a = [ $v ];
@@ -573,7 +577,7 @@ EOD;
                     }
                     # check if the last filter is an array dereference
                     # for efficiency an array dereference should be done as the first filter but the following is done for compatibility with earlier versions
-                    if ( preg_match( '/^<(\d+)>$/', $filters[ count( $filter ) - 1 ], $matches ) === 1 ) {
+                    if ( preg_match( '/^<(\d+)>$/', $filters[ count( $filters ) - 1 ], $matches ) === 1 ) {
                         if ( !array_key_exists( $matches[ 1 ], $value ) ) {
                             $error = <<<EOD
 <div style="border:2px solid red;padding:5px;">Error: $matches[1] is an invalid index for custom field "$field".</div>
@@ -955,7 +959,6 @@ EOD;
             error_log( '$macro=' . $macro );
             $if_count = preg_match_all( '/\r?\n?#if\((' . REGEX_COMP_EXPR . '((&&|&#038;&#038;|\|\|)' . REGEX_COMP_EXPR . ')*)\)#\r?\n?/',
                                         $macro, $if_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
-            error_log( '$if_matches=' . print_r( $if_matches, true ) );
             $end_count = preg_match_all( '/\r?\n?#endif#\r?\n?/', $macro, $end_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
 
             if ( $if_count !== $end_count ) {
@@ -993,7 +996,6 @@ EOD;
                 # do conditional text inclusion/exclusion
                 # first evaluate all conditions in all if statements
                 $includes = array_map( function( $match ) use ( $atts, $eval_expr, $eval_comp ) {
-                    error_log( '$match=' . print_r( $match, true ) );
                     return $eval_expr( $match[ 1 ][ 0 ], $atts );
                 }, $if_matches );
                 $i = 0;
