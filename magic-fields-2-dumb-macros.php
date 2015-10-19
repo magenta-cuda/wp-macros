@@ -586,7 +586,7 @@ EOD;
                         }
                         $value = [ $value[ $matches[1] ] ];
                     }
-                }
+                }   # if ( $filter ) {
                 # everything but the last field should be post id
                 if ( $i !== $last ) {
                     if ( count( $value ) !== 1 ) {
@@ -603,12 +603,12 @@ EOD;
                         return $as_array ? [ ] : '';
                     }
                     continue;
-                }
+                }   # if ( $i !== $last ) {
                 if ( $as_array ) {
                     return $value;
                 }
                 return implode( $options->separator, $value );
-            }
+            }   # foreach ( $fields as $i => $field ) {
         };   # $get_custom_field = function( $field_specifier, $as_array = FALSE ) use ( $options, &$error ) {
         }   # } else {   # if ( $TPCTI_MF2_ACTIVE && !$options->use_native_mode ) {
         # $do_macro implements the [show_macro] shortcode
@@ -956,7 +956,6 @@ EOD;
             }     
             # the condition of if statement is a boolean combination using && and || operators of comparison expressions of the form $#alpha#='gamma',
             # $#alpha#="gamma", $#alpha#=$#beta# or $#alpha# (last case is not really a comparison)
-            error_log( '$macro=' . $macro );
             $if_count = preg_match_all( '/\r?\n?#if\((' . REGEX_COMP_EXPR . '((&&|&#038;&#038;|\|\|)' . REGEX_COMP_EXPR . ')*)\)#\r?\n?/',
                                         $macro, $if_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
             $end_count = preg_match_all( '/\r?\n?#endif#\r?\n?/', $macro, $end_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE );
