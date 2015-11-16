@@ -1,10 +1,42 @@
 <?php
 
+# this is secure limited expression evaluator 
+
 function tti_iii_eval_expr( $expr, &$i, $length ) {
-    return tti_iii_eval_product( $expr, $i, $length );
+    return tti_iii_eval_sum( $expr, $i, $length );
+}
+
+function tti_iii_eval_sum( $expr, &$i, $length ) {
+    error_log( 'tti_iii_eval_sum():0:substr($expr,$i)=' . substr( $expr, $i ) );
+    $sum      = 0;
+    $sum_mode = TRUE;
+    while ( $i < $length ) {
+        if ( $sum_mode ) {
+            $operand = tti_iii_eval_product( $expr, $i, $length );
+            error_log( 'tti_iii_eval_sum():1:substr($expr,$i)=' . substr( $expr, $i ) );
+            if ( $operand ) {
+                $sum += $operand;
+                $sum_mode = FALSE;
+                continue;
+            }
+        } else {
+            $chr = substr( $expr, $i, 1 );
+            if ( $chr === '+' ) {
+                $sum_mode = TRUE;
+                ++$i;
+                continue;
+            } else if ( $chr === ')' ) {
+                return $sum;
+            }
+        }
+        error_log( 'tti_iii_eval_sum():2:substr($expr,$i)=' . substr( $expr, $i ) );
+        return NULL;
+    }
+    return $sum;
 }
 
 function tti_iii_eval_product( $expr, &$i, $length ) {
+    error_log( 'tti_iii_eval_product():0:substr($expr,$i)=' . substr( $expr, $i ) );
     $product      = 1;
     $product_mode = TRUE;
     $digit_mode   = FALSE;
@@ -24,6 +56,7 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
             if ( ctype_digit( $chr ) ) {
                 $digit_mode = TRUE;
                 $i0 = $i;
+                ++$i;
                 continue;
             }
         }
@@ -37,7 +70,7 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
             ++$i;
             continue;
         }
-        if ( $chr === ')' ) {
+        if ( $chr === ')' || $chr === '+' ) {
             break;
         }
         if ( $chr === '(' ) {
@@ -50,11 +83,10 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
                     continue;
                 }
             }
-            return NULL; 
-        } 
+        }
+        return NULL;
     }
     if ( $product_mode && $i0 !== -1 ) {
-        error_log( 'substr( $expr, $i0, $i - $i0 )=' . substr( $expr, $i0, $i - $i0 ) );
         $product *= ( integer ) substr( $expr, $i0, $i - $i0 );
     }
     return $product;
@@ -68,7 +100,10 @@ $exprs = [
     '5*2*333',
     '5 * 2 * 333',
     ' 5 * ( 2 * 333 ) ',
-    ' '
+    '11 + 88 + 1',
+    '11 + 11 * 8 + 1',
+    '11+(11*8) +1',
+    '(77)'
 ];
 
 foreach ( $exprs as $expr ) {
