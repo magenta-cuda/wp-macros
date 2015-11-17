@@ -1,9 +1,19 @@
 <?php
 
-# this is secure limited expression evaluator 
+# this is secure limited expression evaluator - limited means the expression consists of integers and quoted strings joined by *, + and . operators 
+# and grouped by possibly nested parenthesis. The operator precedence is given by the order *, + and .. If the result is numeric the value is saved
+# as an integer otherwise the value is saved as a string. Invalid expressions 3 + "xyz" evaluate to NULL.
 
-function tti_iii_eval_expr( $expr, &$i, $length ) {
-    return tti_iii_eval_concatenation( $expr, $i, $length );
+function tti_iii_eval_expr( $expr ) {
+    $expr  .= ' ';
+    $i      = 0;
+    $length = strlen( $expr );
+    $result = tti_iii_eval_concatenation( $expr, $i, $length );
+    echo '  $expr=\'' . $expr . '\'' . PHP_EOL;
+    echo '$length=' . $length . PHP_EOL;
+    echo '$result=' . $result . PHP_EOL;
+    echo '     $i=' . $i . PHP_EOL;
+    echo '---------------------------------------' . PHP_EOL;
 }
 
 function tti_iii_eval_concatenation( $expr, &$i, $length ) {
@@ -35,7 +45,6 @@ function tti_iii_eval_concatenation( $expr, &$i, $length ) {
         error_log( 'tti_iii_eval_concatenation()[4]:return NULL' );
         return NULL;
     }
-    error_log( '$join=' . $join );
     return $join;
 }
 
@@ -75,7 +84,6 @@ function tti_iii_eval_sum( $expr, &$i, $length ) {
         error_log( 'tti_iii_eval_sum()[4]:return NULL' );
         return NULL;
     }
-    error_log( '$sum=' . $sum );
     return $sum;
 }
 
@@ -157,7 +165,7 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
         if ( $chr === '(' ) {
             if ( $product_mode ) {
                 ++$i;
-                if ( ( $operand = tti_iii_eval_expr( $expr, $i, $length ) ) && substr_compare( $expr, ')', $i, 1 ) === 0 ) {
+                if ( ( $operand = tti_iii_eval_concatenation( $expr, $i, $length ) ) && substr_compare( $expr, ')', $i, 1 ) === 0 ) {
                     if ( $product === NULL ) {
                         $product = $operand;
                     } else if ( is_int( $product ) && is_int( $operand ) ) {
@@ -195,15 +203,7 @@ $exprs = [
 ];
 
 foreach ( $exprs as $expr ) {
-    $expr .= ' ';
-    $i = 0;
-    $length = strlen( $expr );
-    $value = tti_iii_eval_expr( $expr, $i, $length );
-    echo '  $expr=\'' . $expr . '\'' . PHP_EOL;
-    echo '$length=' . $length . PHP_EOL;
-    echo ' $value=' . $value . PHP_EOL;
-    echo '     $i=' . $i . PHP_EOL;
-    echo '---------------------------------------' . PHP_EOL;
+    $value = tti_iii_eval_expr( $expr );
 }
 
 ?>
