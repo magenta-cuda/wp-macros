@@ -1,19 +1,23 @@
 <?php
 
-# this is secure limited expression evaluator - limited means the expression consists of integers and quoted strings joined by *, + and . operators 
-# and grouped by possibly nested parenthesis. The operator precedence is given by the order *, + and .. If the result is numeric the value is saved
-# as an integer otherwise the value is saved as a string. Invalid expressions 3 + "xyz" evaluate to NULL.
+# This is secure limited expression evaluator - limited means the expression consists of integers and quoted strings joined by '*', '+' and '.'
+# operators and grouped by possibly nested parenthesis. The operator precedence is given by the order '*', '+' and '.'. Note that this is slightly different
+# from PHP where '+' and '.' have the same preference. If the result is numeric the value is saved as an integer otherwise the value is saved as a string.
+# Invalid expressions, e.g. 3 + "xyz" evaluate to NULL.
 
 function tti_iii_eval_expr( $expr ) {
     $expr  .= ' ';
     $i      = 0;
     $length = strlen( $expr );
     $result = tti_iii_eval_concatenation( $expr, $i, $length );
+    # remove below
     echo '  $expr=\'' . $expr . '\'' . PHP_EOL;
     echo '$length=' . $length . PHP_EOL;
     echo '$result=' . $result . PHP_EOL;
     echo '     $i=' . $i . PHP_EOL;
     echo '---------------------------------------' . PHP_EOL;
+    # remove above
+    return $result;
 }
 
 function tti_iii_eval_concatenation( $expr, &$i, $length ) {
@@ -182,28 +186,6 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
         return NULL;
     }
     return $product;
-}
-
-$exprs = [
-    '57',
-    ' 5',
-    '55',
-    '5*2',
-    '5*2*333',
-    '5 * 2 * 333',
-    ' 5 * ( 2 * 333 ) ',
-    '11 + 88 + 1',
-    '11 + 11 * 8 + 1',
-    '11+(11*8) +1',
-    '(77)'
-];
-$exprs = [
-    '5*2+(50+( 2 * 10 ) + 20)',
-    '"aaa" . "xxx\"zzz" . ( 11*3 + ( 2 * 22 ) )'
-];
-
-foreach ( $exprs as $expr ) {
-    $value = tti_iii_eval_expr( $expr );
 }
 
 ?>
