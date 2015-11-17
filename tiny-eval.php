@@ -3,7 +3,40 @@
 # this is secure limited expression evaluator 
 
 function tti_iii_eval_expr( $expr, &$i, $length ) {
-    return tti_iii_eval_sum( $expr, $i, $length );
+    return tti_iii_eval_concatenation( $expr, $i, $length );
+}
+
+function tti_iii_eval_concatenation( $expr, &$i, $length ) {
+    $join      = NULL;
+    $join_mode = TRUE;
+    while ( $i < $length ) {
+        if ( $join_mode ) {
+            if ( ( $operand = tti_iii_eval_sum( $expr, $i, $length ) ) === NULL ) {
+                error_log( 'tti_iii_eval_concatenation()[1]:return NULL' );
+                return NULL;
+            }
+            if ( $join === NULL ) {
+                $join = $operand;
+            } else {
+                $join .= $operand;
+            }
+            $join_mode = FALSE;
+            continue;
+        } else {
+            $chr = substr( $expr, $i, 1 );
+            if ( $chr === '.' ) {
+                $join_mode = TRUE;
+                ++$i;
+                continue;
+            } else if ( $chr === ')' ) {
+                return $join;
+            }
+        }
+        error_log( 'tti_iii_eval_concatenation()[4]:return NULL' );
+        return NULL;
+    }
+    error_log( '$join=' . $join );
+    return $join;
 }
 
 function tti_iii_eval_sum( $expr, &$i, $length ) {
@@ -15,8 +48,6 @@ function tti_iii_eval_sum( $expr, &$i, $length ) {
                 error_log( 'tti_iii_eval_sum()[1]:return NULL' );
                 return NULL;
             }
-            error_log( 'tti_iii_eval_sum():$operand=' . $operand );
-            error_log( 'tti_iii_eval_sum():$sum=' . $sum );
             if ( $sum === NULL ) {
                 $sum = $operand;
             } else if ( is_int( $sum ) && is_int( $operand ) ) {
@@ -64,16 +95,16 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
             } else {
                 $operand = ( integer ) substr( $expr, $i0, $i - $i0 );
                 if ( $product === NULL ) {
-                    $product = is_numeric( $operand ) ? ( integer ) $operand : $operand;
-                    error_log( '$product=' . $product );
+                    $product = $operand;
                 } else if ( is_int( $product ) ) {
-                    $product *= ( integer ) substr( $expr, $i0, $i - $i0 );
+                    $product *= $operand;
                 } else {
                     return NULL;
                 }
                 $product_mode = FALSE;
                 $integer_mode = FALSE;
                 $i0           = -1;
+                continue;
             }
         } else if ( $string_mode ) {
             if ( $chr === $quote && $chr0 !== '\\' ) {
@@ -83,7 +114,6 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
                 $quote        = NULL;
                 $i0           = -1;
                 ++$i;
-                error_log( '$product[3]=' . $product );
                 continue;
             } else {
                 $chr0 = $chr;
@@ -95,17 +125,17 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
                 return NULL;
             }
             $integer_mode = TRUE;
-            $i0 = $i;
+            $i0           = $i;
             ++$i;
             continue;
         } else if ( $chr === '\'' || $chr === '"' ) {
             if ( $product_mode === FALSE ) {
                 return NULL;
             }
-            $quote = $chr;
-            $chr0  = $chr;
+            $quote       = $chr;
+            $chr0        = $chr;
             ++$i;
-            $i0    = $i;
+            $i0          = $i;
             $string_mode = TRUE;
             continue;
         }
@@ -143,22 +173,6 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
         }
         return NULL;
     }
-    error_log( '$product_mode=' . $product_mode );
-    error_log( '$i0=' . $i0 );
-    if ( $product_mode ) {
-        if ( $i0 === -1 ) {
-            return NULL;
-        }
-        $operand = substr( $expr, $i0, $i - $i0 );
-        if ( $product === NULL ) {
-            $product = is_numeric( $operand ) ? ( integer ) $operand : $operand;
-        } else if ( is_int( $product ) && is_int( $operand ) ) {
-            $product *= ( integer ) $operand;
-        } else {
-            return NULL;
-        }
-    }
-    error_log( '$product=' . $product );
     return $product;
 }
 
@@ -177,10 +191,11 @@ $exprs = [
 ];
 $exprs = [
     '5*2+(50+( 2 * 10 ) + 20)',
-    '"aaaaaaa"'
+    '"aaa" . "xxx\"zzz" . ( 11*3 + ( 2 * 22 ) )'
 ];
 
 foreach ( $exprs as $expr ) {
+    $expr .= ' ';
     $i = 0;
     $length = strlen( $expr );
     $value = tti_iii_eval_expr( $expr, $i, $length );
