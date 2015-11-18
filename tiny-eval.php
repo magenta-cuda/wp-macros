@@ -1,9 +1,27 @@
 <?php
 
-# This is secure limited expression evaluator - limited means the expression consists of integers and quoted strings joined by '*', '+' and '.'
-# operators and grouped by possibly nested parenthesis. The operator precedence is given by the order '*', '+' and '.'. Note that this is slightly different
-# from PHP where '+' and '.' have the same preference. If the result is numeric the value is saved as an integer otherwise the value is saved as a string.
-# Invalid expressions, e.g. 3 + "xyz" evaluate to NULL.
+/*  Copyright 2015  Magenta Cuda
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as 
+    published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+
+# This is secure limited expression evaluator - limited means the expression consists of integers and single or double quoted strings
+# joined by '*', '/', '+', '-' and '.' operators and grouped by possibly nested parenthesis. The operator precedence is given by the
+# order '*' and '/', '+' and '-', '.'. Note that this is slightly different from PHP where '+' and '.' have the same preference. If
+# the result is numeric the value is saved as an integer otherwise the value is saved as a string. Invalid expressions, e.g. 3 + "xyz"
+# evaluate to NULL.
 
 function tti_iii_eval_expr( $expr ) {
     $expr  .= ' ';
@@ -52,9 +70,13 @@ function tti_iii_eval_concatenation( $expr, &$i, $length ) {
     return $join;
 }
 
+# tti_iii_eval_sum( ) evaluates a sequence of addends joined by either '+' or '-'
+# An addend may be a product or a parenthesized expression, e.g. tti_iii_eval_sum( ) considers 5*11 or (5*(2+7)) to be an addend 
+
 function tti_iii_eval_sum( $expr, &$i, $length ) {
     $sum      = NULL;
     $sum_mode = TRUE;
+    $operator = NULL;
     while ( $i < $length ) {
         if ( $sum_mode ) {
             if ( ( $operand = tti_iii_eval_product( $expr, $i, $length ) ) === NULL ) {
@@ -63,25 +85,32 @@ function tti_iii_eval_sum( $expr, &$i, $length ) {
             }
             if ( $sum === NULL ) {
                 $sum = $operand;
-            } else if ( is_int( $sum ) && is_int( $operand ) ) {
-                $sum += $operand;
+            } else if ( is_integer( $sum ) && is_integer( $operand ) ) {
+                if ( $operator === '+' ) {
+                    $sum += $operand;
+                } else {
+                    $sum -= $operand;
+                }
             } else {
                 error_log( 'tti_iii_eval_sum()[2]:return NULL' );
                 return NULL;
             }
             $sum_mode = FALSE;
+            $operator = NULL;
             continue;
         } else {
             $chr = substr( $expr, $i, 1 );
-            if ( $chr === '+' ) {
+            if ( $chr === '+' || $chr === '-' ) {
                 if ( is_string( $sum ) ) {
-                error_log( 'tti_iii_eval_sum()[3]:return NULL' );
+                    error_log( 'tti_iii_eval_sum()[3]:return NULL' );
                     return NULL;
                 }
                 $sum_mode = TRUE;
+                $operator = $chr;
                 ++$i;
                 continue;
             } else if ( $chr === ')' || $chr === '.' ) {
+                // right parenthesis or operator of lower priority ends the sequence of addends
                 return $sum;
             }
         }
@@ -91,12 +120,16 @@ function tti_iii_eval_sum( $expr, &$i, $length ) {
     return $sum;
 }
 
+# tti_iii_eval_product( ) evaluates a sequence of multiplier and multiplicands joined by '*' or '/'
+# a multiplier or multiplicand may be a parenthesized expression, e.g. tti_iii_eval_product( ) considers (1+11) to be a multiplicand
+
 function tti_iii_eval_product( $expr, &$i, $length ) {
     $product      = NULL;
     $product_mode = TRUE;
     $integer_mode = FALSE;
     $string_mode  = FALSE;
     $quote        = NULL;
+    $operator     = NULL;
     $i0           = -1;
     while ( $i < $length ) {
         $chr = substr( $expr, $i, 1 );
@@ -108,19 +141,27 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
                 $operand = ( integer ) substr( $expr, $i0, $i - $i0 );
                 if ( $product === NULL ) {
                     $product = $operand;
-                } else if ( is_int( $product ) ) {
-                    $product *= $operand;
+                } else if ( is_integer( $product ) ) {
+                    if ( $operator === '*' ) {
+                        $product *= $operand;
+                    } else {
+                        $product /= $operand;
+                    }
                 } else {
                     return NULL;
                 }
                 $product_mode = FALSE;
                 $integer_mode = FALSE;
+                $operator     = NULL;
                 $i0           = -1;
                 continue;
             }
         } else if ( $string_mode ) {
             if ( $chr === $quote && $chr0 !== '\\' ) {
-                $product = str_replace( '\\' . $quote, $quote, substr( $expr, $i0, $i - $i0 ) );
+                if ( $product !== NULL ) {
+                    return NULL;
+                }
+                $product      = str_replace( '\\' . $quote, $quote, substr( $expr, $i0, $i - $i0 ) );
                 $product_mode = FALSE;
                 $string_mode  = FALSE;
                 $quote        = NULL;
@@ -155,15 +196,17 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
             ++$i;
             continue;
         }
-        if ( $chr === '*' ) {
+        if ( $chr === '*' || $chr === '/' ) {
             if ( is_string( $product ) ) {
                 return NULL;
             }
             $product_mode = TRUE;
+            $operator     = $chr;
             ++$i;
             continue;
         }
-        if ( $chr === ')' || $chr === '+' || $chr === '.' ) {
+        if ( $chr === ')' || $chr === '+' || $chr === '-' || $chr === '.' ) {
+            // right parenthesis or operators of lower priority ends the sequence of multiplicands
             break;
         }
         if ( $chr === '(' ) {
