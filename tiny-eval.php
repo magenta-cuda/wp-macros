@@ -18,9 +18,10 @@
 
 
 # This is secure limited expression evaluator - limited means the expression consists of integers and single or double quoted strings
-# joined by '*', '/', '+', '-' and '.' operators and grouped by possibly nested parenthesis. The operator precedence is given by the
-# order '*' and '/', '+' and '-', '.'. Note that this is slightly different from PHP where '+' and '.' have the same preference. If
-# the result is numeric the value is saved as an integer otherwise the value is saved as a string. Invalid expressions, e.g. 3 + "xyz"
+# joined by '*', '/', '%', '+', '-' and '.' operators and grouped by possibly nested parenthesis. The operator precedence is given by
+# the order ( '*', '/', '%' ), ( '+', '-' ), '.' where operators in the same parenthetical group have the same precedence. Note that
+# this is slightly different from PHP where '+' and '.' have the same preference. Associativity is always left associative. If the
+# result is numeric the value is saved as an integer otherwise the value is saved as a string. Invalid expressions, e.g. 3 + "xyz"
 # evaluate to NULL.
 
 function tti_iii_eval_expr( $expr ) {
@@ -144,8 +145,11 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
                 } else if ( is_integer( $product ) ) {
                     if ( $operator === '*' ) {
                         $product *= $operand;
+                    } else if ( $operator === '/' ) {
+                        $product = ( integer ) ( $product / $operand );
+                        
                     } else {
-                        $product /= $operand;
+                        $product %= $operand;
                     }
                 } else {
                     return NULL;
@@ -196,7 +200,7 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
             ++$i;
             continue;
         }
-        if ( $chr === '*' || $chr === '/' ) {
+        if ( $chr === '*' || $chr === '/' || $chr === '%' ) {
             if ( is_string( $product ) ) {
                 return NULL;
             }
