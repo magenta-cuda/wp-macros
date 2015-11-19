@@ -79,7 +79,18 @@ function tti_iii_eval_sum( $expr, &$i, $length ) {
     $sum_mode = TRUE;
     $operator = NULL;
     while ( $i < $length ) {
+        $chr = substr( $expr, $i, 1 );
         if ( $sum_mode ) {
+            # handle unary prefix operators
+            if ( ctype_space( $chr ) || $chr === '+' ) {
+                ++$i;
+                continue;
+            }
+            if ( $chr === '-' ) {
+                $operator = $operator === '+' ? '-' : '+';
+                ++$i;
+                continue;
+            }
             if ( ( $operand = tti_iii_eval_product( $expr, $i, $length ) ) === NULL ) {
                 error_log( 'tti_iii_eval_sum()[1]:return NULL' );
                 return NULL;
@@ -100,7 +111,6 @@ function tti_iii_eval_sum( $expr, &$i, $length ) {
             $operator = NULL;
             continue;
         } else {
-            $chr = substr( $expr, $i, 1 );
             if ( $chr === '+' || $chr === '-' ) {
                 if ( is_string( $sum ) ) {
                     error_log( 'tti_iii_eval_sum()[3]:return NULL' );
