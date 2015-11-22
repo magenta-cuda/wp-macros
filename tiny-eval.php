@@ -135,13 +135,14 @@ function tti_iii_eval_sum( $expr, &$i, $length ) {
 # a multiplier or multiplicand may be a parenthesized expression, e.g. tti_iii_eval_product( ) considers (1+11) to be a multiplicand
 
 function tti_iii_eval_product( $expr, &$i, $length ) {
-    $product      = NULL;
-    $product_mode = TRUE;
-    $integer_mode = FALSE;
-    $string_mode  = FALSE;
-    $quote        = NULL;
-    $operator     = NULL;
-    $i0           = -1;
+    $product       = NULL;
+    $product_mode  = TRUE;
+    $integer_mode  = FALSE;
+    $string_mode   = FALSE;
+    $variable_mode = FALSE;
+    $quote         = NULL;
+    $operator      = NULL;
+    $i0            = -1;
     while ( $i < $length ) {
         $chr = substr( $expr, $i, 1 );
         if ( $integer_mode ) {
@@ -187,6 +188,39 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
                 ++$i;
                 continue;
             }
+        } else if ( $variable_mode ) {
+            if ( ctype_alnum( $chr ) ) {
+                ++$i;
+                continue;
+            } else {
+                if ( !is_scalar( $operand = tti_iii_get_custom_field( substr( $expr, $i0, $i - $i0 ) ) ) ) {
+                    error_log( 'tti_iii_eval_product()[1]:return NULL' );
+                    return NULL;
+                }
+                if ( is_numeric( $operand ) ) {
+                    $operand = ( integer ) $operand;
+                }
+                if ( $product === NULL ) {
+                    $product = $operand;
+                } else if ( is_integer( $product ) && is_integer( $operand ) ) {
+                    if ( $operator === '*' ) {
+                        $product *= $operand;
+                    } else if ( $operator === '/' ) {
+                        $product = ( integer ) ( $product / $operand );
+                        
+                    } else {
+                        $product %= $operand;
+                    }
+                } else {
+                    error_log( 'tti_iii_eval_product()[2]:return NULL' );
+                    return NULL;
+                }
+                $product_mode  = FALSE;
+                $variable_mode = FALSE;
+                $operator      = NULL;
+                $i0            = -1;
+                continue;
+            }
         } else if ( ctype_digit( $chr ) ) {
             if ( $product_mode === FALSE ) {
                 return NULL;
@@ -204,6 +238,11 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
             ++$i;
             $i0          = $i;
             $string_mode = TRUE;
+            continue;
+        } else if ( ctype_alpha( $chr ) ) {
+            $i0            = $i;
+            $variable_mode = TRUE;
+            ++$i;
             continue;
         }
         if ( ctype_space( $chr ) ) {

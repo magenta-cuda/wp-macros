@@ -7,6 +7,10 @@ if ( php_sapi_name( ) !== 'cli' ) {
 }
 
 if ( count( $argv ) > 1 ) {
+    function tti_iii_get_custom_field( $field ) {
+        echo $field . '> ';
+        return trim( fgets( STDIN ) );
+    };
     echo tti_iii_eval_expr( $argv[ 1 ] );
     return;
 }
