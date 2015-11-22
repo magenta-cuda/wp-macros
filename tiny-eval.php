@@ -134,7 +134,7 @@ function tti_iii_eval_sum( $expr, &$i, $length ) {
 # tti_iii_eval_product( ) evaluates a sequence of multiplier and multiplicands joined by '*' or '/'
 # a multiplier or multiplicand may be a parenthesized expression, e.g. tti_iii_eval_product( ) considers (1+11) to be a multiplicand
 
-function tti_iii_eval_product( $expr, &$i, $length ) {
+function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
     $product       = NULL;
     $product_mode  = TRUE;
     $integer_mode  = FALSE;
@@ -189,7 +189,7 @@ function tti_iii_eval_product( $expr, &$i, $length ) {
                 continue;
             }
         } else if ( $variable_mode ) {
-            if ( ctype_alnum( $chr ) ) {
+            if ( ctype_alnum( $chr ) || $chr === '_' || $chr === $filter ) {
                 ++$i;
                 continue;
             } else {
