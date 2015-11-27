@@ -1,11 +1,6 @@
 jQuery(document).ready(function(){
-    // create the "Save as Template" button
-    var a=document.createElement("a");
-    a.className="button";
-    a.href="#";
-    a.textContent="Save as Template";
-    jQuery("a#insert-media-button,button#insert-media-button").after(a);
-    jQuery(a).click(function(){
+    // wire up the "Save as Template" button
+    jQuery("button#tti_iii-save_as_template").click(function(){
         // use AJAX to request the server to create the Content Template
         var slug=jQuery("div#slugdiv input#post_name").val();
         var title=jQuery("div#post-body-content div#titlediv input#title").val();
@@ -115,13 +110,8 @@ jQuery(document).ready(function(){
         }
         return false;
     });
-    // create the "Insert Template" button
-    var a=document.createElement("a");
-    a.className="button";
-    a.href="#";
-    a.textContent="Insert Template";
-    jQuery("a#insert-media-button,button#insert-media-button").after(a);
-    jQuery(a).click(function(){
+    // wire up the "Insert Template" button
+    jQuery("button#tti_iii-insert_template").click(function(){
         showPopup(divTemplate,divPopupOuter);
         divTemplate.find("select#mf2tk-alt_template-select").change();
     });
@@ -162,13 +152,8 @@ jQuery(document).ready(function(){
         divShortcode.find("div#mf2tk-shortcode-tester-area-result").parent()
             .css({display:"block",width:"99%",float:"none","margin-left":"auto","margin-right":"auto"});
     });
-    // create the "Shortcode Tester" button
-    var a=document.createElement("a");
-    a.className="button";
-    a.href="#";
-    a.textContent="Shortcode Tester";
-    jQuery("a#insert-media-button,button#insert-media-button").after(a);
-    jQuery(a).click(function(){
+    // wire up the "Shortcode Tester" button
+    jQuery("button#tti_iii-shortcode-tester").click(function(){
         divShortcode.find("div#mf2tk-shortcode-tester-area-source textarea").val("");
         divShortcode.find("div#mf2tk-shortcode-tester-area-result textarea").val("");
         showPopup(divShortcode,divPopupOuter);

@@ -139,6 +139,16 @@ EOD
   
         } );
 
+        add_action( 'media_buttons', function( ) {
+           $nonce = wp_create_nonce( 'tti_iii-template_nonce' );
+?>
+<button class="button" type="button" id="tti_iii-insert_template"  data-nonce="<?php echo $nonce; ?>">Insert Template</button>
+<button class="button" type="button" id="tti_iii-save_as_template" data-nonce="<?php echo $nonce; ?>">Save as Template</button>
+<button class="button" type="button" id="tti_iii-shortcode-tester" data-nonce="<?php echo $nonce; ?>">Shortcode Tester</button>
+<?php
+            error_log( 'action:media_buttons:' );
+        } );
+        
         if ( is_admin( ) ) {
             
             # AJAX action 'mf2tk_update_content_macro' handles "save as template" action from post content editor
