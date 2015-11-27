@@ -1,26 +1,35 @@
 
 /* Shortcode Tester */
 
-div#mf2tk-popup-outer{
-    position:fixed;
-    left:0;
-    top:0;
-    z-index:100000;
+div#tti_iii-popup_margin{
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    z-index: 100000;
+    border: 2px solid black;
+    border-radius: 7px;
     background-color:black;
-    opacity:0.8;
-    display:none;
+    opacity:0.9;
+    width: 100%;
+    height: 100%;
+    display: none;
 }
 
-div.mf2tk-popup{
-    position:fixed;
-    z-index:100001;
-    background-color:white;
-    border:4px solid #0073AA;
-    opacity:1;
-    overflow-y:auto;
+div.tti_iii-popup{
+    position: fixed;
+    left: 3%;
+    top: 5%;
+    z-index: 100001;
+    border: 2px solid black;
+    border-radius: 7px;
+    background-color: white;
+    width: 94%;
+    height: 90%;
+    overflow: auto;
+    display: none;
 }
 
-div.mf2tk-popup>h3{
+div.tti_iii-popup>h3{
     padding:5px 20px;
     margin:0;
     float:left;

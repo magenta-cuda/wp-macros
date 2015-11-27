@@ -155,6 +155,9 @@ EOD
             
             add_action( 'wp_ajax_mf2tk_update_content_macro', function() use ( $options ) {
                 global $wpdb;
+                if ( !wp_verify_nonce( $_REQUEST[ 'nonce' ], 'tti_iii-template_nonce' ) ) {
+                    wp_nonce_ays( '' );
+                }
                 $ids = $wpdb->get_col( $wpdb->prepare( <<<EOD
 SELECT ID FROM $wpdb->posts WHERE post_type = %s AND post_title = %s AND post_status = 'publish'
 EOD
@@ -181,6 +184,9 @@ EOD
             # handles evaluate HTML fragments from post content editor shortcode tester
             
             add_action( 'wp_ajax_tpcti_eval_post_content', function( ) use ( &$do_macro, $TPCTI_MF2_ACTIVE ) {
+                if ( !wp_verify_nonce( $_REQUEST[ 'nonce' ], 'tti_iii-template_nonce' ) ) {
+                    wp_nonce_ays( '' );
+                }
                 if ( $TPCTI_MF2_ACTIVE ) {
                 require_once( MF_PATH . '/mf_front_end.php' );   # MF2 only
                 }   # if ( $TPCTI_MF2_ACTIVE ) {
@@ -255,9 +261,9 @@ mf2tk_globals.mf2tk_alt_template={
                 $insert_template = function( ) {
 ?>
 <!-- start insert_template -->
-<div id="mf2tk-popup-outer" style="display:none;">
+<div id="tti_iii-popup_margin" style="display:none;">
 </div>
-<div id="mf2tk-alt-template" class="mf2tk-popup" style="display:none;">
+<div id="mf2tk-alt-template" class="tti_iii-popup" style="display:none;">
     <h3>Insert Post Content Template</h3>
     <button id="button-mf2tk-alt-template-close">X</button>
     <div style="clear:both;">
@@ -288,7 +294,7 @@ in <strong>Text</strong> mode.<br>
                 $shortcode_tester = function( ) use ( $options ) {
 ?>
 <!-- start shortcode tester -->
-<div id="mf2tk-shortcode-tester" class="mf2tk-popup" style="display:none;">
+<div id="mf2tk-shortcode-tester" class="tti_iii-popup" style="display:none;">
     <h3>Shortcode Tester</h3>
     <button id="button-mf2tk-shortcode-tester-close">X</button>
     <div style="padding:0;margin:0;clear:both;">
