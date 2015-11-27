@@ -272,7 +272,8 @@ mf2tk_globals.mf2tk_alt_template={
                 Select Template:
                 <select id="mf2tk-alt_template-select"></select><br>
                 <input id="mf2tk-alt_template-post_name" type="text" class="mf2tk-how-to-use value="" readonly><br>
-- To display this post content template <button class="mf2tk-how-to-use">select,</button> copy and paste this into the editor
+- To display this post content template <button id="tti_iii-copy_instruction" class="mf2tk-how-to-use">copy</button>
+<span id="tti_iii-paste_instruction">and paste</span> this into the editor
 in <strong>Text</strong> mode.<br>
             </div>
         </div>

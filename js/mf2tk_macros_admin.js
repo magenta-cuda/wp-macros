@@ -82,6 +82,11 @@ jQuery(document).ready(function(){
     // "how to use" button
     divTemplate.find("button.mf2tk-how-to-use").click(function(){
         jQuery(this.parentNode).find("input.mf2tk-how-to-use")[0].select();
+        if(!document.execCommand("copy")){
+            // TODO: Test this on Safari browsers where copy may not work
+            jQuery("button#tti_iii-copy_instruction").text("select,");
+            jQuery("span#tti_iii-paste_instruction").text("copy and paste");
+        }
         return false;
     });
     // open/hide template source button
