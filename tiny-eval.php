@@ -133,6 +133,8 @@ function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
     $integer_mode  = FALSE;
     $string_mode   = FALSE;
     $variable_mode = FALSE;
+    $filter_mode   = FALSE;
+    $index_mode    = FALSE;
     $quote         = NULL;
     $operator      = NULL;
     $i0            = -1;
@@ -182,7 +184,36 @@ function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
                 continue;
             }
         } else if ( $variable_mode ) {
+            if ( $index_mode ) {
+                error_log( 'index_mode:' . $chr );
+                if ( ctype_digit( $chr ) ) {
+                } else if ( $chr === '>' ) {
+                    if ( ctype_alnum( substr( $expr, $i + 1, 1 ) ) || substr( $expr, $i + 1, 1 ) === '_' ) {
+                        return NULL;
+                    }
+                    $index_mode = FALSE;
+                } else if ( $chr === '-' && substr( $expr, $i - 1, 1 ) === '<' ) {
+                } else {
+                    return NULL;
+                }
+                ++$i;
+                continue;
+            } else if ( $filter_mode ) {
+                if ( $chr === '<' ) {
+                    if ( substr( $expr, $i - 1, 1 ) === $filter ) {
+                        $index_mode = TRUE;
+                        ++$i;
+                        continue;
+                    } else {
+                        return NULL;
+                    }
+                }
+            }
+            error_log( $chr );
             if ( ctype_alnum( $chr ) || $chr === '_' || $chr === $filter ) {
+                if ( $chr === $filter ) {
+                    $filter_mode = TRUE;
+                }
                 ++$i;
                 continue;
             } else {
@@ -210,6 +241,7 @@ function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
                 }
                 $product_mode  = FALSE;
                 $variable_mode = FALSE;
+                $filter_mode   = FALSE;
                 $operator      = NULL;
                 $i0            = -1;
                 continue;
