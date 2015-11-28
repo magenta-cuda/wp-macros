@@ -185,7 +185,7 @@ function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
             }
         } else if ( $variable_mode ) {
             if ( $index_mode ) {
-                error_log( 'index_mode:' . $chr );
+                # index filter is a left angle bracket, a signed integer and a right angle bracket
                 if ( ctype_digit( $chr ) ) {
                 } else if ( $chr === '>' ) {
                     if ( ctype_alnum( substr( $expr, $i + 1, 1 ) ) || substr( $expr, $i + 1, 1 ) === '_' ) {
@@ -199,6 +199,7 @@ function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
                 ++$i;
                 continue;
             } else if ( $filter_mode ) {
+                # check for the index filter e.g. alpha@<3> 
                 if ( $chr === '<' ) {
                     if ( substr( $expr, $i - 1, 1 ) === $filter ) {
                         $index_mode = TRUE;
@@ -207,9 +208,15 @@ function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
                     } else {
                         return NULL;
                     }
+                # check for filter with argument list e.g. alpha@beta( $, 3, 'aaa')
+                } else if ( $chr === '(' ) {
+                    ++$i;
+                    if ( tti_iii_do_args( $expr, $i, $length ) === FALSE ) {
+                        return NULL;
+                    }
+                    continue;
                 }
             }
-            error_log( $chr );
             if ( ctype_alnum( $chr ) || $chr === '_' || $chr === $filter ) {
                 if ( $chr === $filter ) {
                     $filter_mode = TRUE;
@@ -307,6 +314,69 @@ function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
         return NULL;
     }
     return $product;
+}
+
+function tti_iii_do_args( $expr, &$i, $length ) {
+    $argument_mode = TRUE;
+    $integer_mode  = FALSE;
+    $string_mode   = FALSE;
+    $quote         = NULL;
+    while ( $i < $length ) {
+        $chr = substr( $expr, $i, 1 );
+        if ( $integer_mode ) {
+            if ( ctype_digit( $chr ) ) {
+                ++$i;
+                continue;
+            } else {
+                $integer_mode  = FALSE;
+                $argument_mode = FALSE;
+                continue;
+            }
+        } else if ( $string_mode ) {
+            if ( $chr === $quote && substr( $expr, $i - 1, 1 ) !== '\\' ) {
+                $quote         = NULL;
+                $string_mode   = FALSE;
+                $argument_mode = FALSE;
+            }
+            ++$i;
+            continue;
+        } else if ( $argument_mode ) {
+            # expecting integer or quoted string argument
+            if ( ctype_digit( $chr ) ) {
+                $integer_mode = TRUE;
+                ++$i;
+                continue;
+            } else if ( $chr === '\'' || $chr === '"' ) {
+                $quote       = $chr;
+                $string_mode = TRUE;
+                ++$i;
+                continue;
+            } else if ( ctype_space( $chr ) ) {
+                ++$i;
+                continue;
+            } else {
+                return FALSE;
+            }
+        } else {
+            # expecting comma or right parenthesis
+            if ( $chr === ',' ) {
+                $argument_mode = TRUE;
+                ++$i;
+                continue;
+            } else if ( ctype_space( $chr ) ) {
+                ++$i;
+                continue;
+            } else if ( $chr === ')' ) {
+                ++$i;
+                if ( ctype_alnum( substr( $expr, $i, 1 ) ) || substr( $expr, $i, 1 ) === '_' ) {
+                    return FALSE;
+                }
+                return TRUE;
+            } else {
+                return FALSE;
+            }
+        }
+    }
 }
 
 ?>
