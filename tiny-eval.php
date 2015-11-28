@@ -341,7 +341,7 @@ function tti_iii_do_args( $expr, &$i, $length ) {
             ++$i;
             continue;
         } else if ( $argument_mode ) {
-            # expecting integer or quoted string argument
+            # expecting integer, quoted string argument or the placeholder $
             if ( ctype_digit( $chr ) ) {
                 $integer_mode = TRUE;
                 ++$i;
@@ -351,6 +351,10 @@ function tti_iii_do_args( $expr, &$i, $length ) {
                 $string_mode = TRUE;
                 ++$i;
                 continue;
+            } else if ( $chr === '$' ) {
+                $argument_mode = FALSE;
+                ++$i;
+                continue;                
             } else if ( ctype_space( $chr ) ) {
                 ++$i;
                 continue;
