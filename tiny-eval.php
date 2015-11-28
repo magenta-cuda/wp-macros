@@ -29,15 +29,6 @@ function tti_iii_eval_expr( $expr ) {
     $i      = 0;
     $length = strlen( $expr );
     $result = tti_iii_eval_concatenation( $expr, $i, $length );
-/*
-    # remove below
-    echo '  $expr=\'' . $expr . '\'' . PHP_EOL;
-    echo '$length=' . $length . PHP_EOL;
-    echo '$result=' . $result . PHP_EOL;
-    echo '     $i=' . $i . PHP_EOL;
-    echo '---------------------------------------' . PHP_EOL;
-    # remove above
- */
     return $result;
 }
 

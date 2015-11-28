@@ -898,8 +898,13 @@ EOD;
 
             # do the variable assignments
 
-            # scan for defaults of the form <!-- $#alpha# = "beta"; --> or <!-- $#alpha# = 'beta'; -->
-            # or <!-- $#alpha# = beta@gamma; --> or (MF2) <!-- $#alpha# = beta<1,1>; -->
+            # assignments are of the form <!-- $#alpha# = expression; --> where expression consists of integers and single or double quoted strings
+            # joined by '*', '/', '%', '+', '-' and '.' operators and grouped by possibly nested parenthesis. The operator precedence is given by
+            # the order ( '*', '/', '%' ), ( '+', '-' ), '.' where operators in the same parenthetical group have the same precedence. Note that
+            # this is slightly different from PHP where '+' and '.' have the same preference. Associativity is always left associative. If the
+            # result is numeric the value is saved as an integer otherwise the value is saved as a string. Invalid expressions, e.g. 3 + "xyz"
+            # evaluate to NULL.
+
             if ( preg_match_all( '/<!--\s*\$#([\w-]+)#\s*=\s*(.+?);\s*-->\r?\n?/', $macro, $assignments, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
                 # find locations of inner macros
                 # add "[/show_macro]" terminator since $find_embedded_macros() requires that macro body be terminated

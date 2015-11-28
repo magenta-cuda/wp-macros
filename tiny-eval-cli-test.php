@@ -6,12 +6,26 @@ if ( php_sapi_name( ) !== 'cli' ) {
     return;
 }
 
+function tti_iii_eval_expr_debug( $expr ) {
+    $expr  .= ' ';
+    $i      = 0;
+    $length = strlen( $expr );
+    $result = tti_iii_eval_concatenation( $expr, $i, $length );
+    echo '  $expr=\'' . $expr . '\'' . PHP_EOL;
+    echo '$length=' . $length . PHP_EOL;
+    echo '$result=' . $result . PHP_EOL;
+    echo '     $i=' . $i . PHP_EOL;
+    echo '---------------------------------------' . PHP_EOL;
+    return $result;
+}
+
+
 if ( count( $argv ) > 1 ) {
     function tti_iii_get_custom_field( $field ) {
         echo $field . '> ';
         return trim( fgets( STDIN ) );
     };
-    echo tti_iii_eval_expr( $argv[ 1 ] );
+    echo tti_iii_eval_expr_debug( $argv[ 1 ] );
     return;
 }
 
@@ -40,7 +54,7 @@ $exprs = [
 
 foreach ( $exprs as $expr ) {
     echo '  expr="' . $expr . '"';
-    echo 'result='  . tti_iii_eval_expr( $expr );
+    echo 'result='  . tti_iii_eval_expr_debug( $expr );
 }
 
 ?>
