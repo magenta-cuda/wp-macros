@@ -43,6 +43,7 @@ namespace {
     );
     
     include_once ABSPATH . 'wp-admin/includes/plugin.php';
+    require_once dirname( __FILE__ ) . '/tiny-eval.php';
     
     # in the following the term "content template" and the term "content macro" refer to the same thing
     # "content macro" was the original term for "content template"
@@ -899,8 +900,7 @@ EOD;
 
             # scan for defaults of the form <!-- $#alpha# = "beta"; --> or <!-- $#alpha# = 'beta'; -->
             # or <!-- $#alpha# = beta@gamma; --> or (MF2) <!-- $#alpha# = beta<1,1>; -->
-            if ( preg_match_all( '/<!--\s*\$#([\w-]+)#\s*=\s*(("([^"]+)")|(\'([^\']+)\')|([^;]+));\s*-->\r?\n?/',
-                $macro, $assignments, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
+            if ( preg_match_all( '/<!--\s*\$#([\w-]+)#\s*=\s*(.+?);\s*-->\r?\n?/', $macro, $assignments, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
                 # find locations of inner macros
                 # add "[/show_macro]" terminator since $find_embedded_macros() requires that macro body be terminated
                 $inner_macro_ranges = NULL;
@@ -918,48 +918,29 @@ EOD;
                     }
                     # do the assignment
                     if ( !array_key_exists( $assignment[1][0], $atts ) ) {
-                        if ( array_key_exists( 7, $assignment ) ) {
-                            # assignment is to value of custom field
-                            $custom_field = $assignment[7][0];
-                            # first do any template variable interpolation, e.g. <!-- $#beta# = $#gamma#@<$#i#>; -->
-                            $custom_field = preg_replace_callback( '/\$#(\w+)#/', function( $m ) use ( $atts, &$error ) {
-                                if ( array_key_exists( $m[1], $atts ) ) {
-                                    return $atts[ $m[1] ];
-                                } else {
-                                    $error = '<div style="border:2px solid red;color:red;padding:5px;">'
-                                        . "template variable {$m[1]} is not assigned a value.</div>";
-                                }
-                                return $m[0];
-                            }, $custom_field );
-                            if ( $error ) {
-                                return $error;
+                        # first do any template variable interpolation, e.g. <!-- $#beta# = $#gamma#@<$#i#>; -->
+                        $expr = preg_replace_callback( '/\$#(\w+)#/', function( $m ) use ( $atts, &$error ) {
+                            if ( array_key_exists( $m[1], $atts ) ) {
+                                return $atts[ $m[1] ];
+                            } else {
+                                $error = '<div style="border:2px solid red;color:red;padding:5px;">'
+                                    . "template variable {$m[1]} is not assigned a value.</div>";
                             }
-                            $atts[ $assignment[1][0] ] = $get_custom_field( $custom_field );
-                            if ( $error ) {
-                                return $error;
-                            }
-                        } else {
-                            # assignment is to a string constant
-                            $atts[ $assignment[1][0] ] = preg_replace_callback( '/\$#(\w+)#/', function( $m )
-                                use ( $atts, &$error ) {
-                                if ( array_key_exists( $m[1], $atts ) ) {
-                                    return $atts[ $m[1] ];
-                                } else {
-                                    $error = '<div style="border:2px solid red;color:red;padding:5px;">'
-                                        . "template variable {$m[1]} is not assigned a value.</div>";
-                                }
-                                return $m[0];
-                            }, trim( $assignment[2][0], '"\'' ) );
-                            if ( $error ) {
-                                return $error;
-                            }
+                            return $m[0];
+                        }, $assignment[2][0] );
+                        if ( $error ) {
+                            return $error;
                         }
-                    } else {
+                        if ( ( $result = tti_iii_eval_expr( $expr ) ) === NULL ) {
+                            return "<div style=\"border:2px solid red;color:red;padding:5px;\">$expr is bad expression.</div>";
+                        }
+                        $atts[ $assignment[1][0] ] = ( string ) $result;
+                        
                     }
                     # remove this variable assigment from source
                     $macro = substr_replace( $macro, '', $assignment[0][1], strlen( $assignment[0][0] ) );
                 }   # foreach ( array_reverse( $assignments ) as $assignment ) {
-            }
+            }   # if ( preg_match_all( '/<!--\s*\$#([\w-]+)#\s*=\s*(.+?);\s*-->\r?\n?/', $macro, $assignments, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
             
             # handle conditional text inclusion
             
