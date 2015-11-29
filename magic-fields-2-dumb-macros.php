@@ -147,7 +147,6 @@ EOD
 <button class="button" type="button" id="tti_iii-save_as_template" data-nonce="<?php echo $nonce; ?>">Save as Template</button>
 <button class="button" type="button" id="tti_iii-shortcode-tester" data-nonce="<?php echo $nonce; ?>">Shortcode Tester</button>
 <?php
-            error_log( 'action:media_buttons:' );
         } );
         
         if ( is_admin( ) ) {
@@ -630,7 +629,7 @@ EOD;
         };   # $get_custom_field = function( $field_specifier, $as_array = FALSE ) use ( $options, &$error ) {
         }   # } else {   # if ( $TPCTI_MF2_ACTIVE && !$options->use_native_mode ) {
 
-        tti_iii_get_custom_field( $get_custom_field );
+        \TTI_III\tti_iii_get_custom_field( $get_custom_field );
 
         # $do_macro implements the [show_macro] shortcode
 
@@ -939,7 +938,7 @@ EOD;
                         if ( $error ) {
                             return $error;
                         }
-                        if ( ( $result = tti_iii_eval_expr( $expr ) ) === NULL ) {
+                        if ( ( $result = \TTI_III\tti_iii_eval_expr( $expr ) ) === NULL ) {
                             return "<div style=\"border:2px solid red;color:red;padding:5px;\">$expr is bad expression.</div>";
                         }
                         $atts[ $assignment[1][0] ] = ( string ) $result;

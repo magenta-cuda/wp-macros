@@ -4,7 +4,7 @@ Donate link:
 Tags: template, interpreter, shortcode
 Requires at least: 3.6
 Tested up to: 4.2
-Stable tag: 1.1.1
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 A tiny template language for WordPress post content using only WordPress shortcodes.
@@ -30,6 +30,9 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 2. The Template Selector
 
 == Changelog ==
+
+= 1.2 =
+* the right hand side of an assignment statement can be an expression with arithmetic and concatenation operators and parenthesis
 
 = 1.1.1 =
 * if condition now supports a boolean combination of comparison expressions, e.g. #if( $#alpha#="1" && $#beta#!="2" || $#gamma#>="3" || $#delta# )#
@@ -61,4 +64,6 @@ shortcodes. **This plugin requires at least PHP 5.4.**
 = 1.1.1 =
 * if condition now supports a boolean combination of comparison expressions, e.g. #if( $#alpha#="1" && $#beta#!="2" || $#gamma#>="3" || $#delta# )#
 
+= 1.2 =
+* the right hand side of an assignment statement can be an expression with arithmetic and concatenation operators and parenthesis
 

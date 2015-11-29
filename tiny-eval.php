@@ -24,6 +24,8 @@
 # result is numeric the value is saved as an integer otherwise the value is saved as a string. Invalid expressions, e.g. 3 + "xyz"
 # evaluate to NULL.
 
+namespace TTI_III;
+    
 function tti_iii_eval_expr( $expr ) {
     $expr  .= ' ';
     $i      = 0;

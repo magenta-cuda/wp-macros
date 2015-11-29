@@ -10,7 +10,7 @@ function tti_iii_eval_expr_debug( $expr ) {
     $expr  .= ' ';
     $i      = 0;
     $length = strlen( $expr );
-    $result = tti_iii_eval_concatenation( $expr, $i, $length );
+    $result = \TTI_III\tti_iii_eval_concatenation( $expr, $i, $length );
     echo '  $expr=\'' . $expr . '\'' . PHP_EOL;
     echo '$length=' . $length . PHP_EOL;
     echo '$result=' . $result . PHP_EOL;
@@ -25,7 +25,7 @@ if ( count( $argv ) > 1 ) {
         echo $field . '> ';
         return trim( fgets( STDIN ) );
     };
-    tti_iii_get_custom_field( $get_custom_field );
+    \TTI_III\tti_iii_get_custom_field( $get_custom_field );
     echo tti_iii_eval_expr_debug( $argv[ 1 ] );
     return;
 }
