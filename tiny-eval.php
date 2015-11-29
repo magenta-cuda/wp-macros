@@ -383,4 +383,17 @@ function tti_iii_do_args( $expr, &$i, $length ) {
     }
 }
 
+# tti_iii_get_custom_field() must be initialized; the initial call must provide the function to call to get the the value of the custom field.
+# i.e., tti_iii_get_custom_field() is a wrapper for the function provided on the initial call.
+ 
+function tti_iii_get_custom_field( $field ) {
+    static $get_custom_field;
+    if ( empty( $get_custom_field ) ) {
+        $get_custom_field = $field;
+        return TRUE;
+    }
+    return $get_custom_field( $field );
+}
+
+    
 ?>

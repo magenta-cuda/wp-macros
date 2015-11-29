@@ -65,7 +65,7 @@ namespace {
 
     global $mf2tk_the_do_macro;
 
-    $construct = function( ) use ( $TPCTI_MF2_ACTIVE, &$mf2tk_the_do_macro ) {
+    $tti_iii_construct = function( ) use ( $TPCTI_MF2_ACTIVE, &$mf2tk_the_do_macro ) {
 
         # $do_macro will hold the function that implements the [show_macro] shortcode
         $do_macro = NULL;
@@ -1259,9 +1259,9 @@ if ( $TPCTI_MF2_ACTIVE ) {
         } );
 
         remove_filter( 'the_content', 'wpautop' );
-    };   # $construct = function( ) use ( &$mf2tk_the_do_macro ) {
+    };   # $tti_iii_construct = function( ) use ( &$mf2tk_the_do_macro ) {
 
-    $construct( );
+    $tti_iii_construct( );
 }
 
 #if ( $TPCTI_MF2_ACTIVE ) {

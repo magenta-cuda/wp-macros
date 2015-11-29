@@ -21,10 +21,11 @@ function tti_iii_eval_expr_debug( $expr ) {
 
 
 if ( count( $argv ) > 1 ) {
-    function tti_iii_get_custom_field( $field ) {
+    $get_custom_field = function( $field ) {
         echo $field . '> ';
         return trim( fgets( STDIN ) );
     };
+    tti_iii_get_custom_field( $get_custom_field );
     echo tti_iii_eval_expr_debug( $argv[ 1 ] );
     return;
 }
