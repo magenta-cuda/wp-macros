@@ -629,6 +629,9 @@ EOD;
             }   # foreach ( $fields as $i => $field ) {
         };   # $get_custom_field = function( $field_specifier, $as_array = FALSE ) use ( $options, &$error ) {
         }   # } else {   # if ( $TPCTI_MF2_ACTIVE && !$options->use_native_mode ) {
+
+        tti_iii_get_custom_field( $get_custom_field );
+
         # $do_macro implements the [show_macro] shortcode
 
         $mf2tk_the_do_macro = $do_macro = function( $atts, $macro )
