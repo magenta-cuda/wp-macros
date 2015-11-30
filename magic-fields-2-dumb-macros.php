@@ -454,7 +454,7 @@ EOD
             $post_id = $post->ID;
             # a field specifier looks like this: alpha.beta@<-1>@sprintf("%3.3s",$) where . indicates a post member operation
             # break the field specifier on the post member operator
-            preg_match_all( '#(\w+(@((<-?\d+>)|(\w+(\((((("|\').*?("|\'))|\d+(\.\d*)?|\$),)*((("|\').*?("|\'))|\d+(\.\d*)?|\$)\))?)))*)(\\'
+            preg_match_all( '#(\w+(@((<-?\d+>)|(\w+(\(\s*(((("|\').*?("|\'))|\d+(\.\d*)?|\$),\s*)*((("|\').*?("|\'))|\d+(\.\d*)?|\$)\s*\))?)))*)(\\'
                 . $options->post_member . '|$)#', $field_specifier, $fields );
             $fields = $fields[ 1 ];
             $last = count( $fields ) - 1;
