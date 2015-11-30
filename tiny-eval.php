@@ -18,11 +18,11 @@
 
 
 # This is secure limited expression evaluator - limited means the expression consists of integers and single or double quoted strings
-# joined by '*', '/', '%', '+', '-' and '.' operators and grouped by possibly nested parenthesis. The operator precedence is given by
-# the order ( '*', '/', '%' ), ( '+', '-' ), '.' where operators in the same parenthetical group have the same precedence. Note that
-# this is slightly different from PHP where '+' and '.' have the same preference. Associativity is always left associative. If the
+# joined by '*', '/', '%', '+', '-' and '&' operators and grouped by possibly nested parenthesis. The operator precedence is given by
+# the order ( '*', '/', '%' ), ( '+', '-' ), '&' where operators in the same parenthetical group have the same precedence. Note that
+# this is slightly different from PHP where '+' and '&' have the same preference. Associativity is always left associative. If the
 # result is numeric the value is saved as an integer otherwise the value is saved as a string. Invalid expressions, e.g. 3 + "xyz"
-# evaluate to NULL.
+# evaluate to NULL. Note that '&' is used as the concatenation operator since '.' is already used as the member operator.
 
 namespace TTI_III;
     
@@ -52,7 +52,7 @@ function tti_iii_eval_concatenation( $expr, &$i, $length ) {
             continue;
         } else {
             $chr = substr( $expr, $i, 1 );
-            if ( $chr === '.' ) {
+            if ( $chr === '&' ) {
                 $join_mode = TRUE;
                 ++$i;
                 continue;
@@ -115,7 +115,7 @@ function tti_iii_eval_sum( $expr, &$i, $length ) {
                 $operator = $chr;
                 ++$i;
                 continue;
-            } else if ( $chr === ')' || $chr === '.' ) {
+            } else if ( $chr === ')' || $chr === '&' ) {
                 // right parenthesis or operator of lower priority ends the sequence of addends
                 return $sum;
             }
@@ -219,7 +219,7 @@ function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
                     continue;
                 }
             }
-            if ( ctype_alnum( $chr ) || $chr === '_' || $chr === $filter ) {
+            if ( ctype_alnum( $chr ) || $chr === '_' || $chr === $filter || $chr === '.' ) {
                 if ( $chr === $filter ) {
                     $filter_mode = TRUE;
                 }
@@ -292,7 +292,7 @@ function tti_iii_eval_product( $expr, &$i, $length, $filter = '@' ) {
             ++$i;
             continue;
         }
-        if ( $chr === ')' || $chr === '+' || $chr === '-' || $chr === '.' ) {
+        if ( $chr === ')' || $chr === '+' || $chr === '-' || $chr === '&' ) {
             // right parenthesis or operators of lower priority ends the sequence of multiplicands
             break;
         }
